@@ -1,0 +1,11 @@
+{
+    "cmake.configureOnOpen": true,
+    "files.associations": {
+        "vector": "cpp",
+        "thread": "cpp",
+        "__split_buffer": "cpp",
+        "deque": "cpp",
+        "__mutex_base": "cpp",
+        "mutex": "cpp"
+    }
+}

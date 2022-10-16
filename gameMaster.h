@@ -65,7 +65,7 @@ public:
 
     //Nuestras:
     bool es_posicion_bandera(coordenadas coord, color bandera);
-
+    void play();
     //
 };
 

@@ -33,15 +33,14 @@ gameMaster::gameMaster(Config config) {
     this->x = config.x;
 	this->y = config.y;
 
-	assert((config.bandera_roja.first == 1)); 		 // Bandera roja en la primera columna
+	assert((config.bandera_roja.first == 1)); // Bandera roja en la primera columna
 	assert(es_posicion_valida(config.bandera_roja)); // Bandera roja en algún lugar razonable
 
-	assert((config.bandera_azul.first == x-1)); 	 // Bandera azul en la ultima columna
+	assert((config.bandera_azul.first == x-1)); // Bandera azul en la primera columna
 	assert(es_posicion_valida(config.bandera_azul)); // Bandera roja en algún lugar razonable
 
 	assert(config.pos_rojo.size() == config.cantidad_jugadores);
 	assert(config.pos_azul.size() == config.cantidad_jugadores);
-
 	for(auto &coord : config.pos_rojo) {
 		assert(es_posicion_valida(coord)); // Posiciones validas rojas
 	}		
@@ -49,6 +48,7 @@ gameMaster::gameMaster(Config config) {
 	for(auto &coord : config.pos_azul) {
 		assert(es_posicion_valida(coord)); // Posiciones validas rojas
 	}		
+
 	
 	this->jugadores_por_equipos = config.cantidad_jugadores;
 	this->pos_bandera_roja = config.bandera_roja;
@@ -63,30 +63,25 @@ gameMaster::gameMaster(Config config) {
     for (int i = 0; i < x; ++i) {
         tablero[i].resize(y);
         fill(tablero[i].begin(), tablero[i].end(), VACIO);
-    }    
+    }
+    
 
-	// Spawn  rojos 
     for(auto &coord : config.pos_rojo){
         assert(es_color_libre(tablero[coord.first][coord.second])); //Compruebo que no haya otro jugador en esa posicion
         tablero[coord.first][coord.second] = ROJO; // guardo la posicion
     }
 
-	// Spawn azules
     for(auto &coord : config.pos_azul){
         assert(es_color_libre(tablero[coord.first][coord.second]));
         tablero[coord.first][coord.second] = AZUL;
     }
 
-	// Spawn bandera
     tablero[config.bandera_roja.first][config.bandera_roja.second] = BANDERA_ROJA;
     tablero[config.bandera_azul.first][config.bandera_azul.second] = BANDERA_AZUL;
-	
 	this->turno = ROJO;
 
     cout << "SE HA INICIALIZADO GAMEMASTER CON EXITO" << endl;
     // Insertar código que crea necesario de inicialización 
-	
-
 }
 
 void gameMaster::mover_jugador_tablero(coordenadas pos_anterior, coordenadas pos_nueva, color colorEquipo){
@@ -101,7 +96,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
 	
 	coordenadas posicionJugador;
-	if(turno == AZUL){
+	if(turno == AZUL) {
 		posicionJugador = this->pos_jugadores_azules[nro_jugador];	
 	} else {
 		posicionJugador = this->pos_jugadores_rojos[nro_jugador];	
@@ -112,7 +107,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
 	// Que no se puedan mover 2 jugadores a la vez
 	mutexTurnos.lock();
-	if(ganador == INDEFINIDO){
+	if(!termino_juego()) {
 		coordenadas proximaPosicion = proxima_posicion(posicionJugador, dir);
 
 		if(turno == AZUL){
@@ -123,12 +118,6 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 				ganador = AZUL;
 			}
 
-			jugadasAzul++;
-
-			if(jugadasAzul == jugadores_por_equipos - 1){
-				termino_ronda(turno);
-			}
-
 		} else {
 			this->pos_jugadores_rojos[nro_jugador] = proximaPosicion;
 			mover_jugador_tablero(posicionJugador, proximaPosicion, ROJO);
@@ -137,13 +126,8 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 				ganador = ROJO;
 			}
 
-			jugadasRojo++;
-
-
-			if(jugadasRojo == jugadores_por_equipos - 1){
-				termino_ronda(turno);
-			}
 		}
+		
 	} else {
 		// SKIP
 	}
@@ -162,15 +146,17 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
 
 void gameMaster::termino_ronda(color equipo) {
-	// FIXME: Hacer chequeo de que es el color correcto que está llamando.
+	// FIXME: Hacer chequeo de que es el color correcto que está llamando
 	// FIXME: Hacer chequeo que hayan terminado todos los jugadores del equipo o su quantum (via mover_jugador)
-	jugadasRojo = 0;
-	jugadasAzul = 0;
-	if(equipo == turno){
-		turno = (equipo == AZUL) ? ROJO : AZUL;
+	if(!termino_juego()){
+		if(equipo == ROJO){
+			sem_post(&turno_azul);
+			turno = AZUL;			
+		}else{
+			sem_post(&turno_rojo);
+			turno = ROJO;
+		}
 	}
-	
-
 	
 }
 
@@ -207,4 +193,8 @@ bool gameMaster::es_posicion_bandera(coordenadas coord, color bandera){
 		return false;
 	}
 	return false;
+}
+
+void gameMaster::play(){
+	cout << "Empezando 🤖, que gane el mejor..." << endl;
 }
