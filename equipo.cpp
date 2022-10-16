@@ -25,7 +25,11 @@ void Equipo::jugador(int nro_jugador) {
 				if(quantum_restante > 0) {
 					int random_pick = rand() % 4;
 					direccion proxima_dir = vector<direccion>{ARRIBA, ABAJO, IZQUIERDA, DERECHA}[random_pick];
+					printlock.lock();
 					cout << "Moviendo el jugador: " << nro_jugador << " del equipo " << ((this->equipo == ROJO) ? ("ROJO") : ("AZUL")) <<  " hacia " << proxima_dir << endl;
+					cout << "Quantum restante: " << quantum_restante << endl;
+					cout << "----------------------------------" << endl;
+					printlock.unlock();
 					this->belcebu->mover_jugador(proxima_dir, nro_jugador);
 					quantum_restante--;
 

@@ -22,6 +22,7 @@ class Equipo {
 		vector<coordenadas> posiciones;
 		coordenadas pos_bandera_contraria;
 		vector<mutex> disponible_jugada;
+		mutex printlock = mutex();
 		//
 		// ...
 		//
