@@ -12,34 +12,44 @@ void Equipo::jugador(int nro_jugador) {
 	//
 	// ...
 	//
-
 	while(!this->belcebu->termino_juego()) { // Chequear que no haya una race condition en gameMaster
 		switch(this->strat) {
 			//SECUENCIAL,RR,SHORTEST,USTEDES
 			case(SECUENCIAL): {
+
+				//este semaforo es para determinar que equipo esta jugando
 				sem_t turno = (this->equipo == AZUL) ? (this->belcebu->turno_azul) : (this->belcebu->turno_rojo);
 				sem_wait(&turno);
-				// el que empiece libre, arranca. cuando vuelva a entrar, el lock lo va a frenar.
-				disponible_jugada[nro_jugador].lock(); 
 				
-				if(quantum_restante > 0) {
+				// el que empiece libre, arranca. cuando vuelva a entrar, el lock lo va a frenar.
+				
+				if(cant_jugadores_que_ya_jugaron < cant_jugadores) {
 					int random_pick = rand() % 4;
 					direccion proxima_dir = vector<direccion>{ARRIBA, ABAJO, IZQUIERDA, DERECHA}[random_pick];
 					printlock.lock();
 					cout << "Moviendo el jugador: " << nro_jugador << " del equipo " << ((this->equipo == ROJO) ? ("ROJO") : ("AZUL")) <<  " hacia " << proxima_dir << endl;
-					cout << "Quantum restante: " << quantum_restante << endl;
+					cout << "Jugadores restantes: " << cant_jugadores - cant_jugadores_que_ya_jugaron << endl;
 					cout << "----------------------------------" << endl;
 					printlock.unlock();
-					this->belcebu->mover_jugador(proxima_dir, nro_jugador);
-					quantum_restante--;
-
-					if(quantum_restante == 0) {
-						quantum_restante = this->quantum;
+					
+					belcebu->mover_jugador(proxima_dir, nro_jugador);
+					//posiciones[nro_jugador] = belcebu->proxima_posicion(posiciones[nro_jugador], proxima_dir);
+					
+					printlock.lock();
+					cant_jugadores_que_ya_jugaron++;
+					
+					
+					if(cant_jugadores_que_ya_jugaron == cant_jugadores) {
+						cant_jugadores_que_ya_jugaron = 0;
 						this->belcebu->termino_ronda(this->equipo);
 					}
+					
+					printlock.unlock();
 
+					if(cant_jugadores > cant_jugadores_que_ya_jugaron) sem_wait(&barrier);
+					sem_post(&barrier);
 				}
-				disponible_jugada[(nro_jugador + 1) % cant_jugadores /*esto define un orden, cambiar por random ?*/].unlock();
+
 				break;
 			}	
 			case(RR):
@@ -83,13 +93,9 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	this->quantum_restante = quantum;
 	this->cant_jugadores = cant_jugadores;
 	this->posiciones = posiciones;
-	this->disponible_jugada = vector<mutex>(cant_jugadores);
 	//
 	// ...
 	//
-	for(int i = 0; i < cant_jugadores; i++){
-		if(i != 0) disponible_jugada[i].lock();
-	}
 
 	//Si necesitamos mas semaforos van aca
 	if(equipo == AZUL){

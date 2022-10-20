@@ -15,10 +15,8 @@ const int quantum = 10;
 
 int main(){
     Config config = *(new Config());
-
 	
     gameMaster belcebu = gameMaster(config);
- 
 
 	// Creo equipos (lanza procesos)
 	int quantum = 10;

@@ -3,7 +3,10 @@
 #include "gameMaster.h"
 
 bool gameMaster::es_posicion_valida(coordenadas pos) {
-	return (pos.first > 0) && (pos.first < x) && (pos.second > 0) && (pos.second < y);
+	return  (pos.first > 0) &&
+			(pos.first < x) && 
+			(pos.second > 0) && 
+			(pos.second < y);
 }
 
 bool gameMaster::es_color_libre(color color_tablero){
@@ -29,10 +32,9 @@ int gameMaster::distancia(coordenadas c1, coordenadas c2) {
 gameMaster::gameMaster(Config config) {
 	assert(config.x>0); 
 	assert(config.y>0); // Tamaño adecuado del tablero
-
+	
     this->x = config.x;
 	this->y = config.y;
-
 	assert((config.bandera_roja.first == 1)); // Bandera roja en la primera columna
 	assert(es_posicion_valida(config.bandera_roja)); // Bandera roja en algún lugar razonable
 
@@ -57,14 +59,12 @@ gameMaster::gameMaster(Config config) {
     this->pos_jugadores_azules = config.pos_azul;
 	this->jugadasAzul = 0;
 	this->jugadasRojo = 0;
-
 	// Seteo tablero
 	tablero.resize(x);
     for (int i = 0; i < x; ++i) {
         tablero[i].resize(y);
         fill(tablero[i].begin(), tablero[i].end(), VACIO);
     }
-    
 
     for(auto &coord : config.pos_rojo){
         assert(es_color_libre(tablero[coord.first][coord.second])); //Compruebo que no haya otro jugador en esa posicion
@@ -93,7 +93,7 @@ void gameMaster::mover_jugador_tablero(coordenadas pos_anterior, coordenadas pos
 
 int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 	// Chequear que la movida sea valida 						(adentro del tablero)
-
+	int res = nro_ronda;
 	
 	coordenadas posicionJugador;
 	if(turno == AZUL) {
@@ -101,14 +101,17 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 	} else {
 		posicionJugador = this->pos_jugadores_rojos[nro_jugador];	
 	}
-	
+	coordenadas proximaPosicion = proxima_posicion(posicionJugador, dir);
+	bool posicion_es_valida = (es_color_libre(en_posicion(posicionJugador)) && es_posicion_valida( proxima_posicion(posicionJugador, dir) )) || es_posicion_bandera( proxima_posicion(posicionJugador, dir), turno );
+	assert(posicion_es_valida); //in bounds
 
-	assert(es_posicion_valida( proxima_posicion(posicionJugador, dir) )); //in bounds
+	/*
+	una posicion no valida podria llegar a ser la bandera a la que vamos
+	*/
 
 	// Que no se puedan mover 2 jugadores a la vez
 	mutexTurnos.lock();
 	if(!termino_juego()) {
-		coordenadas proximaPosicion = proxima_posicion(posicionJugador, dir);
 
 		if(turno == AZUL){
 			this->pos_jugadores_azules[nro_jugador] = proximaPosicion;
@@ -116,6 +119,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
 			if(es_posicion_bandera(proximaPosicion, ROJO)){
 				ganador = AZUL;
+				res = 0;
 			}
 
 		} else {
@@ -124,6 +128,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
 			if(es_posicion_bandera(proximaPosicion, AZUL)){
 				ganador = ROJO;
+				res = 0;
 			}
 
 		}
@@ -142,6 +147,8 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
 	
 	// TODO: actualizar coordenadas del equipo (decidir si lo hace el gamemaster o el equipo)
+	return res;
+
 }
 
 
@@ -157,7 +164,7 @@ void gameMaster::termino_ronda(color equipo) {
 			turno = ROJO;
 		}
 	}
-	
+	nro_ronda++;
 }
 
 bool gameMaster::termino_juego() {

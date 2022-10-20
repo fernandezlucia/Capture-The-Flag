@@ -6,6 +6,7 @@
         "__split_buffer": "cpp",
         "deque": "cpp",
         "__mutex_base": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "iostream": "cpp"
     }
 }
