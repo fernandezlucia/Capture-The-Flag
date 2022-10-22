@@ -1,10 +1,20 @@
 #include "equipo.h"
 
-
+/**
+ * @brief obtengo la direccion correspondiente a apuntar desde pos1 a pos2
+ * por ejemplo: (5,5) -> (1,1) => ARRIBA o IZQUIERDA
+ * @param pos1 Coordenada desde donde apuntamos
+ * @param pos2 Coordenada hacia donde apuntamos
+ * @return direccion a la que tenemos que avanzar.
+ */
 direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) {
-	if (pos2.second > pos1.second) return ABAJO;
-	if (pos2.second < pos1.second) return ARRIBA;
-	return (pos2.first > pos1.first) ? DERECHA : IZQUIERDA;
+	if(pos1.first > pos2.first) return IZQUIERDA;
+	if (pos1.first < pos2.first) return DERECHA;
+	// Estoy en la misma COL.
+	if(pos1.second > pos2.second) return ARRIBA;
+	if(pos1.second < pos2.second) return ABAJO;
+	cout << "Ya estamos en la bandera" << endl;
+	return ABAJO;
 }
 
 
@@ -24,14 +34,8 @@ void Equipo::jugador(int nro_jugador) {
 				// el que empiece libre, arranca. cuando vuelva a entrar, el lock lo va a frenar.
 				
 				if(cant_jugadores_que_ya_jugaron < cant_jugadores) {
-					int random_pick = rand() % 4;
 					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
 					direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
-					printlock.lock();
-					cout << "Moviendo el jugador: " << nro_jugador << " del equipo " << ((this->equipo == ROJO) ? ("ROJO") : ("AZUL")) <<  " hacia " << proxima_dir << endl;
-					cout << "Jugadores restantes: " << cant_jugadores - cant_jugadores_que_ya_jugaron << endl;
-					cout << "----------------------------------" << endl;
-					printlock.unlock();
 					
 					belcebu->mover_jugador(proxima_dir, nro_jugador);
 					//posiciones[nro_jugador] = belcebu->proxima_posicion(posiciones[nro_jugador], proxima_dir);

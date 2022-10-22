@@ -92,7 +92,7 @@ void gameMaster::mover_jugador_tablero(coordenadas pos_anterior, coordenadas pos
 
 
 int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
-	// Chequear que la movida sea valida 						(adentro del tablero)
+	// Chequear que la movida sea valida (adentro del tablero)
 	int res = nro_ronda;
 	
 	coordenadas posicionJugador;
@@ -102,41 +102,45 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 		posicionJugador = this->pos_jugadores_rojos[nro_jugador];	
 	}
 	coordenadas proximaPosicion = proxima_posicion(posicionJugador, dir);
+	bool pos_valida = es_posicion_valida(proximaPosicion);
+	bool es_libre = es_color_libre(en_posicion(proximaPosicion));
+	color x = turno == AZUL ? BANDERA_ROJA : BANDERA_AZUL;
+	bool bandera_objetivo = en_posicion(proximaPosicion) == x;
+	// No me puedo mover, por el momento termino mi turno si a donde
+	// apunto no puedo, pero habria que buscar alternativa, es decir, 
+	// tener un listado de posibles movimientos para el jugador i, 
+	// y probar hasta agotarlos. 
+	if(!es_libre && !bandera_objetivo) return nro_ronda; 
+
+	mutexTurnos.lock();
 	cout 
-	<< "Moviendo al jugador " 
-	<< nro_jugador 
-	<< " a la posicion " 
+	<< "Realizando turno de: " 
+	<< nro_jugador << " "
+	<< ((turno == AZUL) ? ("AZUL") : ("ROJO")) 
+	<< " moviendose hacia (" 
 	<< proximaPosicion.first 
 	<< "," 
-	<< proximaPosicion.second 
+	<< proximaPosicion.second
+	<< "). Nro Ronda: " << nro_ronda << "."
 	<< endl;
-	bool pos_valida = es_posicion_valida(proximaPosicion);
-	assert(pos_valida); //in bounds
-
-	/*
-	una posicion no valida podria llegar a ser la bandera a la que vamos
-	*/
-
-	// Que no se puedan mover 2 jugadores a la vez
-	mutexTurnos.lock();
 	if(!termino_juego()) {
 
 		if(turno == AZUL){
 			this->pos_jugadores_azules[nro_jugador] = proximaPosicion;
-			mover_jugador_tablero(posicionJugador, proximaPosicion, AZUL);
-
 			if(es_posicion_bandera(proximaPosicion, ROJO)){
 				ganador = AZUL;
 				res = 0;
+			} else {
+				mover_jugador_tablero(posicionJugador, proximaPosicion, AZUL);
 			}
 
 		} else {
 			this->pos_jugadores_rojos[nro_jugador] = proximaPosicion;
-			mover_jugador_tablero(posicionJugador, proximaPosicion, ROJO);
-
 			if(es_posicion_bandera(proximaPosicion, AZUL)){
 				ganador = ROJO;
 				res = 0;
+			}else {
+				mover_jugador_tablero(posicionJugador, proximaPosicion, ROJO);
 			}
 
 		}
