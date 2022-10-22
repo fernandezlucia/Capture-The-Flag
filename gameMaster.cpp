@@ -102,8 +102,16 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 		posicionJugador = this->pos_jugadores_rojos[nro_jugador];	
 	}
 	coordenadas proximaPosicion = proxima_posicion(posicionJugador, dir);
-	bool posicion_es_valida = (es_color_libre(en_posicion(posicionJugador)) && es_posicion_valida( proxima_posicion(posicionJugador, dir) )) || es_posicion_bandera( proxima_posicion(posicionJugador, dir), turno );
-	assert(posicion_es_valida); //in bounds
+	cout 
+	<< "Moviendo al jugador " 
+	<< nro_jugador 
+	<< " a la posicion " 
+	<< proximaPosicion.first 
+	<< "," 
+	<< proximaPosicion.second 
+	<< endl;
+	bool pos_valida = es_posicion_valida(proximaPosicion);
+	assert(pos_valida); //in bounds
 
 	/*
 	una posicion no valida podria llegar a ser la bandera a la que vamos

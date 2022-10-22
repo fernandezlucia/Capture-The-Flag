@@ -25,7 +25,8 @@ void Equipo::jugador(int nro_jugador) {
 				
 				if(cant_jugadores_que_ya_jugaron < cant_jugadores) {
 					int random_pick = rand() % 4;
-					direccion proxima_dir = vector<direccion>{ARRIBA, ABAJO, IZQUIERDA, DERECHA}[random_pick];
+					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+					direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
 					printlock.lock();
 					cout << "Moviendo el jugador: " << nro_jugador << " del equipo " << ((this->equipo == ROJO) ? ("ROJO") : ("AZUL")) <<  " hacia " << proxima_dir << endl;
 					cout << "Jugadores restantes: " << cant_jugadores - cant_jugadores_que_ya_jugaron << endl;
@@ -121,14 +122,11 @@ void Equipo::comenzar() {
 }
 
 void Equipo::terminar() {
-	for(auto &t:jugadores){
+	for(auto &t : jugadores){
 		t.join();
-	}	
+	}
 }
 
 coordenadas Equipo::buscar_bandera_contraria() {
-	//
-	// ...
-	//
-	return pair<int,int>{0,0};
+	return contrario == ROJO ? belcebu->pos_bandera_roja : belcebu->pos_bandera_azul;
 }

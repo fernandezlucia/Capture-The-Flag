@@ -17,7 +17,6 @@ private:
     int x, y, jugadores_por_equipos;
     vector<vector<color>> tablero;
     vector<coordenadas> pos_jugadores_azules, pos_jugadores_rojos;
-    coordenadas pos_bandera_roja, pos_bandera_azul;
     color turno;
     estrategia strat;
     mutex mutexTurnos;
@@ -43,6 +42,7 @@ public:
     void termino_ronda(color equipo); // Marca que un jugador terminó la ronda
     int mover_jugador(direccion dir, int nro_jugador);
     color ganador = INDEFINIDO;
+    coordenadas pos_bandera_roja, pos_bandera_azul; // TODO: MOVER A PRIVATE!
     //
     //...
     //
