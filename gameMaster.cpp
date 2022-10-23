@@ -171,12 +171,20 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 void gameMaster::termino_ronda(color equipo) {
 	// FIXME: Hacer chequeo de que es el color correcto que está llamando
 	// FIXME: Hacer chequeo que hayan terminado todos los jugadores del equipo o su quantum (via mover_jugador)
+	int i = 0;
 	if(!termino_juego()){
 		if(equipo == ROJO){
-			sem_post(&turno_azul);
-			turno = AZUL;			
+			while(i < 4){
+				sem_post(&turno_azul);
+				i++;
+			}
+			turno = AZUL;
+						
 		}else{
-			sem_post(&turno_rojo);
+			while(i < 4){
+				sem_post(&turno_rojo);
+				i++;
+			}
 			turno = ROJO;
 		}
 	}

@@ -6,6 +6,7 @@
 #include <thread>
 #include "definiciones.h"
 #include "gameMaster.h"
+#include <atomic>
 
 using namespace std;
 
@@ -24,6 +25,7 @@ class Equipo {
 		mutex printlock;
 		mutex fafa;
 		sem_t barrier;
+		atomic<int> value = 0;
 		//
 		// ...
 		//

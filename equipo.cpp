@@ -37,18 +37,16 @@ void Equipo::jugador(int nro_jugador) {
 					
 					printlock.lock();
 					belcebu->mover_jugador(proxima_dir, nro_jugador);
-					cant_jugadores_que_ya_jugaron++;	
-					if(cant_jugadores > cant_jugadores_que_ya_jugaron) {
-						sem_wait(&barrier);
-					}
 					printlock.unlock();
 
-					
-
+					int p = value.fetch_add(1);
+					if(cant_jugadores - 1 > p) {
+						sem_wait(&barrier);
+					}
 					sem_post(&barrier);
 					fafa.lock();
-					if(cant_jugadores_que_ya_jugaron == cant_jugadores) {
-						cant_jugadores_que_ya_jugaron = 0;
+					if(p == cant_jugadores - 1) {
+						value.fetch_sub(p + 1);
 						this->belcebu->termino_ronda(this->equipo);
 					}
 					fafa.unlock();
