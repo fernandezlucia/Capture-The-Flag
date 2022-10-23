@@ -21,7 +21,8 @@ class Equipo {
 		int cant_jugadores_que_ya_jugaron = 0;
 		vector<coordenadas> posiciones;
 		coordenadas pos_bandera_contraria;
-		mutex printlock = mutex();
+		mutex printlock;
+		mutex fafa;
 		sem_t barrier;
 		//
 		// ...

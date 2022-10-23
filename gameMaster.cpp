@@ -110,9 +110,13 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 	// apunto no puedo, pero habria que buscar alternativa, es decir, 
 	// tener un listado de posibles movimientos para el jugador i, 
 	// y probar hasta agotarlos. 
-	if(!es_libre && !bandera_objetivo) return nro_ronda; 
-
-	mutexTurnos.lock();
+	// mutexTurnos.lock();
+	if(!es_libre && !bandera_objetivo) {
+		cout << "No me pude mover y soy " << nro_jugador << " de "
+		<< ((turno == AZUL) ? ("AZUL") : ("ROJO")) << endl;
+		// mutexTurnos.unlock();
+		return nro_ronda;
+	} 	
 	cout 
 	<< "Realizando turno de: " 
 	<< nro_jugador << " "
@@ -154,7 +158,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
     // setear la variable ganador
 	
-	mutexTurnos.unlock();
+	// mutexTurnos.unlock();
     // Devolver acorde a la descripción
 
 	
@@ -215,5 +219,5 @@ bool gameMaster::es_posicion_bandera(coordenadas coord, color bandera){
 }
 
 void gameMaster::play(){
-	cout << "Empezando 🤖, que gane el mejor..." << endl;
+	// cout << "Empezando 🤖, que gane el mejor..." << endl;
 }

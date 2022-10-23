@@ -28,31 +28,30 @@ void Equipo::jugador(int nro_jugador) {
 			case(SECUENCIAL): {
 
 				//este semaforo es para determinar que equipo esta jugando
-				sem_t turno = (this->equipo == AZUL) ? (this->belcebu->turno_azul) : (this->belcebu->turno_rojo);
-				sem_wait(&turno);
+				(this->equipo == AZUL) ? (sem_wait(&belcebu->turno_azul)) : (sem_wait(&belcebu->turno_rojo));
 				
 				// el que empiece libre, arranca. cuando vuelva a entrar, el lock lo va a frenar.
-				
 				if(cant_jugadores_que_ya_jugaron < cant_jugadores) {
 					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
 					direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
 					
-					belcebu->mover_jugador(proxima_dir, nro_jugador);
-					//posiciones[nro_jugador] = belcebu->proxima_posicion(posiciones[nro_jugador], proxima_dir);
-					
 					printlock.lock();
-					cant_jugadores_que_ya_jugaron++;
+					belcebu->mover_jugador(proxima_dir, nro_jugador);
+					cant_jugadores_que_ya_jugaron++;	
+					if(cant_jugadores > cant_jugadores_que_ya_jugaron) {
+						sem_wait(&barrier);
+					}
+					printlock.unlock();
+
 					
-					
+
+					sem_post(&barrier);
+					fafa.lock();
 					if(cant_jugadores_que_ya_jugaron == cant_jugadores) {
 						cant_jugadores_que_ya_jugaron = 0;
 						this->belcebu->termino_ronda(this->equipo);
 					}
-					
-					printlock.unlock();
-
-					if(cant_jugadores > cant_jugadores_que_ya_jugaron) sem_wait(&barrier);
-					sem_post(&barrier);
+					fafa.unlock();
 				}
 
 				break;
@@ -98,6 +97,7 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	this->quantum_restante = quantum;
 	this->cant_jugadores = cant_jugadores;
 	this->posiciones = posiciones;
+	sem_init(&barrier, 0, 0);
 	//
 	// ...
 	//
@@ -106,7 +106,7 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	if(equipo == AZUL){
 		sem_init(&belcebu->turno_azul, 0, 0);
 	} else {
-		sem_init(&belcebu->turno_rojo, 0, 1);
+		sem_init(&belcebu->turno_rojo, 0, cant_jugadores);
 	}
 
 }

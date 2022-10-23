@@ -7,6 +7,8 @@
         "deque": "cpp",
         "__mutex_base": "cpp",
         "mutex": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "new": "cpp",
+        "version": "cpp"
     }
 }
