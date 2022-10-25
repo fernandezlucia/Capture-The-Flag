@@ -22,7 +22,6 @@ private:
 
     int jugadasRojo = 0;
     int jugadasAzul = 0;
-
 	
     //
     //...
@@ -62,7 +61,7 @@ public:
 	coordenadas proxima_posicion(coordenadas anterior, direccion movimiento); // Calcula la proxima posición a moverse
     //
     //...
-
+    int proximo_cercano(color equipo);
     //Nuestras:
     bool es_posicion_bandera(coordenadas coord, color bandera);
     coordenadas* movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo);

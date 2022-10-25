@@ -27,6 +27,10 @@ class Equipo {
 		sem_t barrier;
         sem_t barrier2;
 		atomic_int value{0};
+		
+		vector<sem_t> mutexes_rr;
+
+		vector<int> jugadores_ya_jugaron;
 		//
 		// ...
 		//

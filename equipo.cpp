@@ -55,13 +55,6 @@ void Equipo::jugador(int nro_jugador) {
                 sem_wait(&barrier);
                 sem_post(&barrier);
 
-                //barrera del equipo
-                //int p = value.fetch_add(1);
-                //if(p < cant_jugadores - 1) {
-                //    sem_wait(&barrier);
-                //}
-                //sem_post(&barrier);
-
                 //ultimo decrementa value, y termina la ronda
 
                 fafa.lock();
@@ -80,21 +73,51 @@ void Equipo::jugador(int nro_jugador) {
 				break;
 			}	
 			case(RR):
-				//
-				// ...
-				//
+				
+				// mutex que solo entra uno
+				
+				sem_wait(&mutexes_rr[nro_jugador]);
+
+				//molinetes
+				if(this->equipo == AZUL) {
+                    sem_wait(&belcebu->turno_azul);
+                    sem_post(&belcebu->turno_azul);	
+                } else {
+                    sem_wait(&belcebu->turno_rojo); 
+                    sem_post(&belcebu->turno_rojo);
+                }
+
+				if(quantum_restante > 0){
+					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+                	direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
+					
+					belcebu->mover_jugador(proxima_dir, nro_jugador);
+					
+					quantum_restante--;
+					sem_post(&mutexes_rr[(nro_jugador + 1) % cant_jugadores]);
+				} else {
+					quantum_restante = quantum;
+					sem_post(&mutexes_rr[0]);
+					this->belcebu->termino_ronda(this->equipo);
+					sem_post(&barrier);
+				}
+				
 				break;
 
 			case(SHORTEST):
-				//
-				// ...
-				//
+				
+
+
 				break;
 
 			case(USTEDES):
-				//
-				// ...
-				//
+				// ideas
+				// Movimientos random
+				// Longest Job First
+				// Un jugador tiene mas quantum que los demas
+
+
+
 				break;
 			default:
 				break;
@@ -121,6 +144,20 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	this->cant_jugadores = cant_jugadores;
 	this->posiciones = posiciones;
 
+	for(int i = 0; i < cant_jugadores; i++){
+		sem_t semaphore;
+		mutexes_rr.emplace_back(semaphore);
+		if(i == 0){
+			sem_init(&mutexes_rr[i], 0, 1);
+		} else {
+			sem_init(&mutexes_rr[i], 0, 0);
+		}
+	}
+	
+	for(int i = 0; i < cant_jugadores; i++){
+		jugadores_ya_jugaron.push_back(0);
+	}
+
 	sem_init(&barrier, 0, 0);
     sem_init(&barrier2, 0, 1);
     //
@@ -128,6 +165,13 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	//
 
 	//Si necesitamos mas semaforos van aca
+
+	// interpretamos en la consigna que de no alcanzar para cubrir a todos los jugadores con el quantum,
+	// todos se mueven una vez.
+	if(quantum < cant_jugadores){
+		quantum = cant_jugadores;
+		quantum_restante = quantum;
+	}
 
     //Iniciar su respectivo semaforo.
 	if(equipo == AZUL){
