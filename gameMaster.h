@@ -19,8 +19,7 @@ private:
     vector<coordenadas> pos_jugadores_azules, pos_jugadores_rojos;
     color turno;
     estrategia strat;
-    mutex mutexTurnos;
-    
+
     int jugadasRojo = 0;
     int jugadasAzul = 0;
 
@@ -54,6 +53,7 @@ public:
     static int distancia(coordenadas pair1, coordenadas pair2);
     
     sem_t turno_rojo, turno_azul; // FIXME: Al principio necesito entrar como azul, luego puedo hacerlo por el método termino_ronda....
+
     //TODO: mutex cada jugador
 
     color en_posicion(coordenadas coord);
@@ -65,6 +65,7 @@ public:
 
     //Nuestras:
     bool es_posicion_bandera(coordenadas coord, color bandera);
+    coordenadas* movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo);
     void play();
     //
 };

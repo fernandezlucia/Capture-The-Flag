@@ -13,6 +13,8 @@ direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) {
 	// Estoy en la misma COL.
 	if(pos1.second > pos2.second) return ARRIBA;
 	if(pos1.second < pos2.second) return ABAJO;
+
+    //no deberia pasar, no se puede estar en la bandera
 	cout << "Ya estamos en la bandera" << endl;
 	return ABAJO;
 }
@@ -27,30 +29,53 @@ void Equipo::jugador(int nro_jugador) {
 			//SECUENCIAL,RR,SHORTEST,USTEDES
 			case(SECUENCIAL): {
 
-				//este semaforo es para determinar que equipo esta jugando
-				(this->equipo == AZUL) ? (sem_wait(&belcebu->turno_azul)) : (sem_wait(&belcebu->turno_rojo));
-				
-				// el que empiece libre, arranca. cuando vuelva a entrar, el lock lo va a frenar.
-				if(cant_jugadores_que_ya_jugaron < cant_jugadores) {
-					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
-					direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
-					
-					printlock.lock();
-					belcebu->mover_jugador(proxima_dir, nro_jugador);
-					printlock.unlock();
+                //molinetes
+				if(this->equipo == AZUL) {
+                    sem_wait(&belcebu->turno_azul);
+                    sem_post(&belcebu->turno_azul);
+                } else {
+                    sem_wait(&belcebu->turno_rojo);
+                    sem_post(&belcebu->turno_rojo);
+                }
 
-					int p = value.fetch_add(1);
-					if(cant_jugadores - 1 > p) {
-						sem_wait(&barrier);
-					}
-					sem_post(&barrier);
-					fafa.lock();
-					if(p == cant_jugadores - 1) {
-						value.fetch_sub(p + 1);
-						this->belcebu->termino_ronda(this->equipo);
-					}
-					fafa.unlock();
-				}
+                coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+                direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
+
+                //parte critica: moverse y esperar barrera
+                moverse.lock();
+                belcebu->mover_jugador(proxima_dir, nro_jugador);
+                cant_jugadores_que_ya_jugaron++;
+                if(cant_jugadores_que_ya_jugaron == cant_jugadores){
+                    sem_wait(&barrier2); //trabar barrera2
+                    sem_post(&barrier); //liberar barrera
+                }
+                moverse.unlock();
+                //fin parte critica
+
+                sem_wait(&barrier);
+                sem_post(&barrier);
+
+                //barrera del equipo
+                //int p = value.fetch_add(1);
+                //if(p < cant_jugadores - 1) {
+                //    sem_wait(&barrier);
+                //}
+                //sem_post(&barrier);
+
+                //ultimo decrementa value, y termina la ronda
+
+                fafa.lock();
+                cant_jugadores_que_ya_jugaron--;
+                if (cant_jugadores_que_ya_jugaron == 0){
+                    this->belcebu->termino_ronda(this->equipo);
+                    sem_wait(&barrier);
+                    sem_post(&barrier2);
+                }
+                fafa.unlock();
+
+                sem_wait(&barrier2);
+                sem_post(&barrier2);
+				//}
 
 				break;
 			}	
@@ -95,18 +120,21 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	this->quantum_restante = quantum;
 	this->cant_jugadores = cant_jugadores;
 	this->posiciones = posiciones;
+
 	sem_init(&barrier, 0, 0);
-	//
+    sem_init(&barrier2, 0, 1);
+    //
 	// ...
 	//
 
 	//Si necesitamos mas semaforos van aca
+
+    //Iniciar su respectivo semaforo.
 	if(equipo == AZUL){
 		sem_init(&belcebu->turno_azul, 0, 0);
 	} else {
-		sem_init(&belcebu->turno_rojo, 0, cant_jugadores);
+		sem_init(&belcebu->turno_rojo, 0, 1);
 	}
-
 }
 
 void Equipo::comenzar() {

@@ -3,6 +3,7 @@
 #include <sys/unistd.h>
 #include <vector>
 #include <mutex>
+
 #include "gameMaster.h"
 #include "equipo.h"
 #include "definiciones.h"
@@ -22,13 +23,12 @@ int main(){
 	int quantum = 10;
 	Equipo rojo(&belcebu, ROJO, strat, config.cantidad_jugadores, quantum, config.pos_rojo);
 	Equipo azul(&belcebu, AZUL, strat, config.cantidad_jugadores, quantum, config.pos_azul);
-    
-    
+
     rojo.comenzar();
     azul.comenzar();
+    rojo.terminar();
+	azul.terminar();
     belcebu.play();
-	rojo.terminar();
-	azul.terminar();	
 
     cout << "Bandera capturada por el equipo "<< belcebu.ganador << ". Felicidades!" << endl;
 
