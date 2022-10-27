@@ -137,8 +137,8 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
     }
 
 	bool es_libre = es_color_libre(en_posicion(proximaPosicion)); //La proxima posicion es vacia en el tablero?
-    color x = turno == AZUL ? BANDERA_ROJA : BANDERA_AZUL;
-	bool bandera_objetivo = en_posicion(proximaPosicion) == x; //La proxima posicion es la bandera?
+    color bandera_contraria = turno == AZUL ? BANDERA_ROJA : BANDERA_AZUL;
+	bool bandera_objetivo = en_posicion(proximaPosicion) == bandera_contraria; //La proxima posicion es la bandera?
 
 	// No me puedo mover, por el momento termino mi turno si a donde
 	// apunto no puedo, pero habria que buscar alternativa, es decir, 
@@ -159,7 +159,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
         while(!success){
             es_libre = es_color_libre(en_posicion(next[i])); //La proxima posicion es vacia en el tablero?
-            bandera_objetivo = en_posicion(next[i]) == x; //La proxima posicion es la bandera?
+            bandera_objetivo = en_posicion(next[i]) == bandera_contraria; //La proxima posicion es la bandera?
             if(!es_libre && !bandera_objetivo){
                 if(i < 3){
                     i++;
@@ -236,29 +236,16 @@ void gameMaster::termino_ronda(color equipo) {
 	int i = 0;
 	if(!termino_juego()){
 		if(equipo == ROJO){
-
-			//while(i < jugadores_por_equipos){
-            //int val;
-            //sem_getvalue(&turno_rojo, &val);
-            //if(val > 0){
-                sem_wait(&turno_rojo);
-            //}
-            sem_post(&turno_azul);
-			//	i++;
-			//}
-			turno = AZUL;
-						
+            for (int i = 0; i < this->jugadores_por_equipos; i++)
+            {
+                sem_post(&turno_azul);
+            }
+            turno = AZUL;				
 		} else {
-
-			//while(i < jugadores_por_equipos){
-            //int val;
-            //sem_getvalue(&turno_azul, &val);
-            //if(val > 0){
-                sem_wait(&turno_azul);
-            //}
-            sem_post(&turno_rojo);
-			//	i++;
-			//}
+            for (int i = 0; i < this->jugadores_por_equipos; i++)
+            {
+                sem_post(&turno_rojo);
+            }
 			turno = ROJO;
 		}
 	}

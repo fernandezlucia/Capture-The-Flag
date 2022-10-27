@@ -23,7 +23,7 @@ class Equipo {
 		vector<coordenadas> posiciones;
 		coordenadas pos_bandera_contraria;
 		mutex moverse;
-		mutex fafa;
+		mutex terminacion_de_ronda;
 		sem_t barrier;
         sem_t barrier2;
 		atomic_int value{0};

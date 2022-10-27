@@ -26,14 +26,12 @@ void Equipo::jugador(int nro_jugador) {
 		switch(this->strat) {
 			//SECUENCIAL,RR,SHORTEST,USTEDES
 			case(SECUENCIAL): {
-
+				int finalizador = -1;
                 //molinetes
 				if(this->equipo == AZUL) {
                     sem_wait(&belcebu->turno_azul);
-                    sem_post(&belcebu->turno_azul);
                 } else {
                     sem_wait(&belcebu->turno_rojo);
-                    sem_post(&belcebu->turno_rojo);
                 }
 
                 coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
@@ -44,29 +42,25 @@ void Equipo::jugador(int nro_jugador) {
                 belcebu->mover_jugador(proxima_dir, nro_jugador);
                 cant_jugadores_que_ya_jugaron++;
                 if(cant_jugadores_que_ya_jugaron == cant_jugadores){
-                    sem_wait(&barrier2); //trabar barrera2
-                    sem_post(&barrier); //liberar barrera
+					finalizador = nro_jugador;
                 }
                 moverse.unlock();
                 //fin parte critica
+				
+				if(cant_jugadores_que_ya_jugaron == cant_jugadores){
+					for (int i = 0; i < cant_jugadores; i++)
+					{
+						sem_post(&barrier);
+					}
+				}
 
-                sem_wait(&barrier);
-                sem_post(&barrier);
-
-                //ultimo decrementa value, y termina la ronda
-
-                fafa.lock();
-                cant_jugadores_que_ya_jugaron--;
-                if (cant_jugadores_que_ya_jugaron == 0){
-                    this->belcebu->termino_ronda(this->equipo);
-                    sem_wait(&barrier);
-                    sem_post(&barrier2);
-                }
-                fafa.unlock();
-
-                sem_wait(&barrier2);
-                sem_post(&barrier2);
-				//}
+				sem_wait(&barrier);
+				terminacion_de_ronda.lock();
+				if(nro_jugador == finalizador){
+					cant_jugadores_que_ya_jugaron = 0;
+					this->belcebu->termino_ronda(this->equipo);
+				}
+				terminacion_de_ronda.unlock();
 
 				break;
 			}	
@@ -130,8 +124,6 @@ void Equipo::jugador(int nro_jugador) {
 				// Longest Job First
 				// Un jugador tiene mas quantum que los demas
 
-
-
 				break;
 			default:
 				break;
@@ -173,7 +165,6 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	}
 
 	sem_init(&barrier, 0, 0);
-    sem_init(&barrier2, 0, 1);
     //
 	// ...
 	//
@@ -191,7 +182,7 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	if(equipo == AZUL){
 		sem_init(&belcebu->turno_azul, 0, 0);
 	} else {
-		sem_init(&belcebu->turno_rojo, 0, 1);
+		sem_init(&belcebu->turno_rojo, 0, cant_jugadores);
 	}
 }
 
