@@ -6,6 +6,7 @@
 #include <thread>
 #include "definiciones.h"
 #include "gameMaster.h"
+#include <atomic>
 
 using namespace std;
 
@@ -21,9 +22,15 @@ class Equipo {
 		int cant_jugadores_que_ya_jugaron = 0;
 		vector<coordenadas> posiciones;
 		coordenadas pos_bandera_contraria;
-		mutex printlock;
-		mutex fafa;
+		mutex moverse;
+		mutex terminacion_de_ronda;
 		sem_t barrier;
+        sem_t barrier2;
+		atomic_int value{0};
+		
+		vector<sem_t> mutexes_rr;
+
+		vector<int> jugadores_ya_jugaron;
 		//
 		// ...
 		//

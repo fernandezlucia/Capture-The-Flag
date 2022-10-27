@@ -9,6 +9,7 @@
         "mutex": "cpp",
         "iostream": "cpp",
         "new": "cpp",
-        "version": "cpp"
+        "version": "cpp",
+        "array": "cpp"
     }
 }

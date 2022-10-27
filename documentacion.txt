@@ -3,3 +3,16 @@ BanderaRojaX BanderaRojaY
 BanderaAzulX BanderaAzulY
 coordanadasInicialesRojo
 coordenadasInicialesAzul
+  
+  BR  |     |      |    |     |  ...  |         |       |       |      |         |
+  1A  |     |      |    |     |  ...  |         |       |       |      |         |
+  2A  |     |      |    |     |  ...  |         |       |       |      |         |
+  3A  |     |      |    |     |  ...  |         |       |       |      |         |
+  4A  |     |      |    |     |  ...  |         |       |       |      |         |
+                                 ...
+      |     |      |    |     |  ...  |         |       |       |      |         |
+      |     |      |    |     |  ...  |         |       |       |      |         |
+      |     |      |    |     |  ...  |         |       |       |      |         |
+      |     |      |    |     |  ...  |         |       |       |      |         |
+      |     |      |    |     |  ...  |         |       |       |      |         |
+      |     |      |    |     |  ...  |   4A    |  3A   |  2A   | 1A   |   BA    |

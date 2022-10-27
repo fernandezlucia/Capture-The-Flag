@@ -19,11 +19,9 @@ private:
     vector<coordenadas> pos_jugadores_azules, pos_jugadores_rojos;
     color turno;
     estrategia strat;
-    mutex mutexTurnos;
-    
+
     int jugadasRojo = 0;
     int jugadasAzul = 0;
-
 	
     //
     //...
@@ -43,6 +41,7 @@ public:
     int mover_jugador(direccion dir, int nro_jugador);
     color ganador = INDEFINIDO;
     coordenadas pos_bandera_roja, pos_bandera_azul; // TODO: MOVER A PRIVATE!
+    bool soy_el_mas_cercano(int nro_jugador, color equipo);
     //
     //...
     //
@@ -54,6 +53,7 @@ public:
     static int distancia(coordenadas pair1, coordenadas pair2);
     
     sem_t turno_rojo, turno_azul; // FIXME: Al principio necesito entrar como azul, luego puedo hacerlo por el método termino_ronda....
+
     //TODO: mutex cada jugador
 
     color en_posicion(coordenadas coord);
@@ -62,9 +62,10 @@ public:
 	coordenadas proxima_posicion(coordenadas anterior, direccion movimiento); // Calcula la proxima posición a moverse
     //
     //...
-
+    int proximo_cercano(color equipo);
     //Nuestras:
     bool es_posicion_bandera(coordenadas coord, color bandera);
+    coordenadas* movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo);
     void play();
     //
 };
