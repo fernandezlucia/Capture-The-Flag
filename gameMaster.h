@@ -41,6 +41,7 @@ public:
     int mover_jugador(direccion dir, int nro_jugador);
     color ganador = INDEFINIDO;
     coordenadas pos_bandera_roja, pos_bandera_azul; // TODO: MOVER A PRIVATE!
+    bool soy_el_mas_cercano(int nro_jugador, color equipo);
     //
     //...
     //

@@ -14,8 +14,6 @@ direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) {
 	if(pos1.second > pos2.second) return ARRIBA;
 	if(pos1.second < pos2.second) return ABAJO;
 
-    //no deberia pasar, no se puede estar en la bandera
-	cout << "Ya estamos en la bandera" << endl;
 	return ABAJO;
 }
 
@@ -106,7 +104,23 @@ void Equipo::jugador(int nro_jugador) {
 
 			case(SHORTEST):
 				
+				//molinetes
+				if(this->equipo == AZUL) {
+                    sem_wait(&belcebu->turno_azul);
+                    sem_post(&belcebu->turno_azul);	
+                } else {
+                    sem_wait(&belcebu->turno_rojo); 
+                    sem_post(&belcebu->turno_rojo);
+                }
 
+				if(belcebu->soy_el_mas_cercano(nro_jugador,this->equipo)){
+					cout << "Soy el mas cercano, mi numero es: " << nro_jugador << endl;
+					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+                	direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
+					
+					belcebu->mover_jugador(proxima_dir, nro_jugador);
+					this->belcebu->termino_ronda(this->equipo);
+				}
 
 				break;
 

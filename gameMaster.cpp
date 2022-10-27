@@ -93,6 +93,27 @@ void gameMaster::mover_jugador_tablero(coordenadas pos_anterior, coordenadas pos
     tablero[pos_nueva.first][pos_nueva.second] = colorEquipo;
 }
 
+int distancia_del_taxista(coordenadas p1, coordenadas p2){
+    return abs((p1.first - p2.first) + (p1.second - p2.second));
+}
+
+bool gameMaster::soy_el_mas_cercano(int nro_jugador, color equipo){
+    int masCercano = 0;
+    if(equipo == ROJO){
+        int distancia_de_jugador_actual = distancia_del_taxista(pos_jugadores_rojos[nro_jugador], pos_bandera_azul);
+        for(int i = 0; i < pos_jugadores_rojos.size(); i++) {
+            if(distancia_de_jugador_actual > distancia_del_taxista(pos_jugadores_rojos[i], pos_bandera_azul)) return false;            
+        }
+    }
+    else {
+        int distancia_de_jugador_actual = distancia_del_taxista(pos_jugadores_azules[nro_jugador], pos_bandera_roja);
+        for(int i = 0; i < pos_jugadores_azules.size(); i++) {
+            if(distancia_de_jugador_actual > distancia_del_taxista(pos_jugadores_azules[i], pos_bandera_roja)) return false;            
+        }
+    }
+    return true;
+}
+
 int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 	int res = nro_ronda;
 	
@@ -110,6 +131,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
         cout << "Me intente mover a una posicion invalida entonces no hice nada, soy "
              << nro_jugador << " de "
              << ((turno == AZUL) ? ("AZUL") : ("ROJO"))
+             << " en (" << proximaPosicion.first << "," << proximaPosicion.second << ")"
              << endl;
         return nro_ronda;
     }
