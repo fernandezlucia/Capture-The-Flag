@@ -236,16 +236,8 @@ void gameMaster::termino_ronda(color equipo) {
 	int i = 0;
 	if(!termino_juego()){
 		if(equipo == ROJO){
-            for (int i = 0; i < this->jugadores_por_equipos; i++)
-            {
-                sem_post(&turno_azul);
-            }
             turno = AZUL;				
 		} else {
-            for (int i = 0; i < this->jugadores_por_equipos; i++)
-            {
-                sem_post(&turno_rojo);
-            }
 			turno = ROJO;
 		}
 	}

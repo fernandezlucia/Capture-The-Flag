@@ -30,6 +30,7 @@ void Equipo::jugador(int nro_jugador) {
                 //molinetes
 				if(this->equipo == AZUL) {
                     sem_wait(&belcebu->turno_azul);
+					this_thread::sleep_for(100ms); // COMO SOLUCIONAMOS NO USAR ESTO? 
                 } else {
                     sem_wait(&belcebu->turno_rojo);
                 }
@@ -47,20 +48,18 @@ void Equipo::jugador(int nro_jugador) {
                 moverse.unlock();
                 //fin parte critica
 				
-				if(cant_jugadores_que_ya_jugaron == cant_jugadores){
-					for (int i = 0; i < cant_jugadores; i++)
-					{
-						sem_post(&barrier);
-					}
-				}
-
-				sem_wait(&barrier);
-				terminacion_de_ronda.lock();
-				if(nro_jugador == finalizador){
+				if(cant_jugadores_que_ya_jugaron == cant_jugadores && finalizador == nro_jugador) {
+					for (int i = 0; i < cant_jugadores; i++) sem_post(&barrier);
 					cant_jugadores_que_ya_jugaron = 0;
 					this->belcebu->termino_ronda(this->equipo);
 				}
-				terminacion_de_ronda.unlock();
+
+				sem_wait(&barrier);
+				if(this->equipo == AZUL) {
+                    sem_post(&belcebu->turno_rojo);
+                } else {
+                    sem_post(&belcebu->turno_azul);
+                }
 
 				break;
 			}	
