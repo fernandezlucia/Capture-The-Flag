@@ -51,9 +51,11 @@ public:
 	int getTamx();
 	int getTamy();
     static int distancia(coordenadas pair1, coordenadas pair2);
+    int ronda_actual();
     
     sem_t turno_rojo, turno_azul; // FIXME: Al principio necesito entrar como azul, luego puedo hacerlo por el método termino_ronda....
 
+    sem_t ronda_anterior_finalizada;
     //TODO: mutex cada jugador
 
     color en_posicion(coordenadas coord);

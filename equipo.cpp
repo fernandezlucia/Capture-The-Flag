@@ -27,12 +27,14 @@ void Equipo::jugador(int nro_jugador) {
 			//SECUENCIAL,RR,SHORTEST,USTEDES
 			case(SECUENCIAL): {
 				int finalizador = -1;
-                //molinetes
 				if(this->equipo == AZUL) {
                     sem_wait(&belcebu->turno_azul);
-					this_thread::sleep_for(100ms); // COMO SOLUCIONAMOS NO USAR ESTO? 
                 } else {
                     sem_wait(&belcebu->turno_rojo);
+					if(belcebu->ronda_actual() > 0){
+						sem_wait(&belcebu->ronda_anterior_finalizada);
+						sem_post(&belcebu->ronda_anterior_finalizada);
+					}
                 }
 
                 coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
@@ -44,6 +46,7 @@ void Equipo::jugador(int nro_jugador) {
                 cant_jugadores_que_ya_jugaron++;
                 if(cant_jugadores_que_ya_jugaron == cant_jugadores){
 					finalizador = nro_jugador;
+					if(belcebu->ronda_actual() > 0 && this->equipo == ROJO) sem_post(&belcebu->ronda_anterior_finalizada);
                 }
                 moverse.unlock();
                 //fin parte critica
@@ -56,7 +59,11 @@ void Equipo::jugador(int nro_jugador) {
 
 				sem_wait(&barrier);
 				if(this->equipo == AZUL) {
-                    sem_post(&belcebu->turno_rojo);
+					if(todos_terminaron.fetch_add(1) >= cant_jugadores - 1){
+						int k = todos_terminaron.fetch_sub(cant_jugadores);
+						sem_post(&belcebu->ronda_anterior_finalizada);
+					}
+					sem_post(&belcebu->turno_rojo);
                 } else {
                     sem_post(&belcebu->turno_azul);
                 }
@@ -164,6 +171,7 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	}
 
 	sem_init(&barrier, 0, 0);
+	
     //
 	// ...
 	//

@@ -82,6 +82,7 @@ gameMaster::gameMaster(Config config) {
     tablero[config.bandera_roja.first][config.bandera_roja.second] = BANDERA_ROJA;
     tablero[config.bandera_azul.first][config.bandera_azul.second] = BANDERA_AZUL;
 	this->turno = ROJO;
+    sem_init(&ronda_anterior_finalizada, 0, 0);
 
     cout << "SE HA INICIALIZADO GAMEMASTER CON EXITO" << endl;
     // Insertar código que crea necesario de inicialización
@@ -241,11 +242,15 @@ void gameMaster::termino_ronda(color equipo) {
 			turno = ROJO;
 		}
 	}
-	nro_ronda++;
+    if(equipo == AZUL) nro_ronda++;
 }
 
 bool gameMaster::termino_juego() {
 	return ganador != INDEFINIDO;
+}
+
+int gameMaster::ronda_actual() {
+    return this->nro_ronda;
 }
 
 coordenadas gameMaster::proxima_posicion(coordenadas anterior, direccion movimiento) {
