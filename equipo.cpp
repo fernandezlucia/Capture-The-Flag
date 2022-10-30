@@ -31,7 +31,7 @@ void Equipo::jugador(int nro_jugador) {
                     sem_wait(&belcebu->turno_azul);
                 } else {
                     sem_wait(&belcebu->turno_rojo);
-					if(belcebu->ronda_actual() > 0){
+					if(belcebu->ronda_actual() > 0){ 
 						sem_wait(&belcebu->ronda_anterior_finalizada);
 						sem_post(&belcebu->ronda_anterior_finalizada);
 					}
@@ -62,7 +62,7 @@ void Equipo::jugador(int nro_jugador) {
 				sem_wait(&barrier);
 				if(this->equipo == AZUL) {
 					if(todos_terminaron.fetch_add(1) >= cant_jugadores - 1){
-						int k = todos_terminaron.fetch_sub(cant_jugadores);
+						todos_terminaron.fetch_sub(cant_jugadores);
 						sem_post(&belcebu->ronda_anterior_finalizada);
 					}
 					sem_post(&belcebu->turno_rojo);
@@ -142,6 +142,9 @@ void Equipo::jugador(int nro_jugador) {
 		// ...
 		//
 	}
+	sem_post(&belcebu->ronda_anterior_finalizada);
+	sem_post(&belcebu->turno_rojo);
+	sem_post(&barrier);
 	
 }
 
