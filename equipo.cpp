@@ -37,12 +37,14 @@ void Equipo::jugador(int nro_jugador) {
 					}
                 }
 
-                coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+                coordenadas coords_bandera = buscar_bandera_contraria();
                 direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
 
                 //parte critica: moverse y esperar barrera
                 moverse.lock();
-                belcebu->mover_jugador(proxima_dir, nro_jugador);
+				if(!this->belcebu->termino_juego()){
+					belcebu->mover_jugador(proxima_dir, nro_jugador);
+				}
                 cant_jugadores_que_ya_jugaron++;
                 if(cant_jugadores_que_ya_jugaron == cant_jugadores){
 					finalizador = nro_jugador;
@@ -52,9 +54,9 @@ void Equipo::jugador(int nro_jugador) {
                 //fin parte critica
 				
 				if(cant_jugadores_que_ya_jugaron == cant_jugadores && finalizador == nro_jugador) {
-					for (int i = 0; i < cant_jugadores; i++) sem_post(&barrier);
 					cant_jugadores_que_ya_jugaron = 0;
 					this->belcebu->termino_ronda(this->equipo);
+					for (int i = 0; i < cant_jugadores; i++) sem_post(&barrier);
 				}
 
 				sem_wait(&barrier);

@@ -178,7 +178,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
     cout << "Realizando turno de: "
          << nro_jugador << " "
-         << ((turno == AZUL) ? ("AZUL") : ("ROJO"))
+         << ((turno == AZUL) ? FBLU("AZUL") : FRED("ROJO"))
          << " moviendose desde ("
          << posicionJugador.first
          << ","
