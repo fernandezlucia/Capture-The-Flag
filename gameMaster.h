@@ -42,6 +42,8 @@ public:
     color ganador = INDEFINIDO;
     coordenadas pos_bandera_roja, pos_bandera_azul; // TODO: MOVER A PRIVATE!
     bool soy_el_mas_cercano(int nro_jugador, color equipo);
+    vector<sem_t> mutexes_rr_rojos;
+    vector<sem_t> mutexes_rr_azules;
     //
     //...
     //

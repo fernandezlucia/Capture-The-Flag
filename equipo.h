@@ -26,8 +26,6 @@ class Equipo {
 		mutex terminacion_de_ronda;
 		sem_t barrier;
 		atomic_int todos_terminaron{0};
-		
-		vector<sem_t> mutexes_rr;
 
 		vector<int> jugadores_ya_jugaron;
 		//

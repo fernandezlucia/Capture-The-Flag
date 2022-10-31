@@ -72,38 +72,36 @@ void Equipo::jugador(int nro_jugador) {
 
 				break;
 			}	
-			case(RR):
-				
-				// mutex que solo entra uno
-				
-				sem_wait(&mutexes_rr[nro_jugador]);
+			case(RR): {
+				int finalizador = -1;
+				// belcebu->mutexes_rr_azules
+				if(equipo == ROJO) sem_wait(&belcebu->mutexes_rr_rojos[nro_jugador]);
+				else sem_wait(&belcebu->mutexes_rr_azules[nro_jugador]);
 
-				//molinetes
-				if(this->equipo == AZUL) {
-                    sem_wait(&belcebu->turno_azul);
-                    sem_post(&belcebu->turno_azul);	
-                } else {
-                    sem_wait(&belcebu->turno_rojo); 
-                    sem_post(&belcebu->turno_rojo);
-                }
-
-				if(quantum_restante > 0){
-					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+ 				if(quantum_restante > 0) {
+					coordenadas coords_bandera = buscar_bandera_contraria(); // ejecutar en la creacion del equipo
                 	direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
-					
-					belcebu->mover_jugador(proxima_dir, nro_jugador);
-					
+					belcebu->mover_jugador(proxima_dir, nro_jugador); // sin mutex, sabemos que esta bloqueado
 					quantum_restante--;
-					sem_post(&mutexes_rr[(nro_jugador + 1) % cant_jugadores]);
+					if(this->equipo == AZUL) {
+						sem_post(&belcebu->mutexes_rr_azules[(nro_jugador + 1) % cant_jugadores]);
+					}else {
+						sem_post(&belcebu->mutexes_rr_rojos[(nro_jugador + 1) % cant_jugadores]);
+					}
 				} else {
+					finalizador = nro_jugador;
 					quantum_restante = quantum;
-					sem_post(&mutexes_rr[0]);
 					this->belcebu->termino_ronda(this->equipo);
-					sem_post(&barrier);
 				}
-				
+				if(nro_jugador == finalizador) {
+					if(this->equipo == AZUL){
+						sem_post(&belcebu->mutexes_rr_rojos[0]);	
+					} else {
+						sem_post(&belcebu->mutexes_rr_azules[0]);
+					}
+				}
 				break;
-
+			}
 			case(SHORTEST):
 				
 				//molinetes
@@ -142,9 +140,26 @@ void Equipo::jugador(int nro_jugador) {
 		// ...
 		//
 	}
-	sem_post(&belcebu->ronda_anterior_finalizada);
-	sem_post(&belcebu->turno_rojo);
-	sem_post(&barrier);
+	switch(this->strat){
+		case(SECUENCIAL): {
+			sem_post(&belcebu->ronda_anterior_finalizada);
+			sem_post(&belcebu->turno_rojo);
+			sem_post(&barrier);
+			break;
+		}
+		case(RR): {
+			if(this->equipo == AZUL){
+				sem_post(&belcebu->mutexes_rr_rojos[(nro_jugador + 1) % cant_jugadores]);	
+			} else {
+				sem_post(&belcebu->mutexes_rr_azules[(nro_jugador + 1) % cant_jugadores]);
+			}
+			break;
+		}
+		default: {
+
+		}
+	}
+	
 	
 }
 
@@ -163,11 +178,14 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 
 	for(int i = 0; i < cant_jugadores; i++){
 		sem_t semaphore;
-		mutexes_rr.emplace_back(semaphore);
+		if(equipo == ROJO) belcebu->mutexes_rr_rojos.emplace_back(semaphore);
+		else belcebu->mutexes_rr_azules.emplace_back(semaphore);
 		if(i == 0){
-			sem_init(&mutexes_rr[i], 0, 1);
+			if(equipo == ROJO) sem_init(&(belcebu->mutexes_rr_rojos[i]), 0, 1);
+			else sem_init(&(belcebu->mutexes_rr_azules[i]), 0, 0);
 		} else {
-			sem_init(&mutexes_rr[i], 0, 0);
+			if(equipo == ROJO) sem_init(&(belcebu->mutexes_rr_rojos[i]), 0, 0);
+			else sem_init(&(belcebu->mutexes_rr_azules[i]), 0, 0);
 		}
 	}
 	
