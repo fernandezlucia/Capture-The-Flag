@@ -99,7 +99,6 @@ int distancia_del_taxista(coordenadas p1, coordenadas p2){
 }
 
 bool gameMaster::soy_el_mas_cercano(int nro_jugador, color equipo){
-    int masCercano = 0;
     if(equipo == ROJO){
         int distancia_de_jugador_actual = distancia_del_taxista(pos_jugadores_rojos[nro_jugador], pos_bandera_azul);
         for(int i = 0; i < pos_jugadores_rojos.size(); i++) {

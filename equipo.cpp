@@ -22,6 +22,11 @@ void Equipo::jugador(int nro_jugador) {
 	//
 	// ...
 	//
+	bool soy_el_mas_cercano = false;
+	if(this->strat == SHORTEST){
+		soy_el_mas_cercano = belcebu->soy_el_mas_cercano(nro_jugador,this->equipo);
+	}
+	if(!soy_el_mas_cercano && this->strat == SHORTEST) return;
 	while(!this->belcebu->termino_juego()) { // Chequear que no haya una race condition en gameMaster
 		switch(this->strat) {
 			//SECUENCIAL,RR,SHORTEST,USTEDES
@@ -102,28 +107,33 @@ void Equipo::jugador(int nro_jugador) {
 				}
 				break;
 			}
-			case(SHORTEST):
-				
-				//molinetes
+			case(SHORTEST) : {
+
 				if(this->equipo == AZUL) {
                     sem_wait(&belcebu->turno_azul);
-                    sem_post(&belcebu->turno_azul);	
                 } else {
                     sem_wait(&belcebu->turno_rojo); 
-                    sem_post(&belcebu->turno_rojo);
                 }
 
-				if(belcebu->soy_el_mas_cercano(nro_jugador,this->equipo)){
-					cout << "Soy el mas cercano, mi numero es: " << nro_jugador << endl;
-					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
-                	direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
-					
-					belcebu->mover_jugador(proxima_dir, nro_jugador);
-					this->belcebu->termino_ronda(this->equipo);
+				if(belcebu->ronda_actual() == 0 && this->equipo == ROJO){
+					sem_wait(&belcebu->turno_rojo);
+					sem_wait(&belcebu->turno_rojo);
+					sem_wait(&belcebu->turno_rojo);
 				}
 
-				break;
+				coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+                direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
+				belcebu->mover_jugador(proxima_dir, nro_jugador);
+				this->belcebu->termino_ronda(this->equipo);
 
+				if(this->equipo == AZUL) {
+                    sem_post(&belcebu->turno_rojo);	
+                } else { 
+                	sem_post(&belcebu->turno_azul);
+                }
+
+				break;
+			}
 			case(USTEDES):
 				// ideas
 				// Movimientos random
@@ -194,6 +204,7 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	}
 
 	sem_init(&barrier, 0, 0);
+	sem_init(&lejanos, 0, 0);
 	
     //
 	// ...
