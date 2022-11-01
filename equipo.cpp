@@ -8,6 +8,7 @@
  * @return direccion a la que tenemos que avanzar.
  */
 direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) {
+
 	if(pos1.first > pos2.first) return IZQUIERDA;
 	if (pos1.first < pos2.first) return DERECHA;
 	// Estoy en la misma COL.
@@ -22,7 +23,46 @@ void Equipo::jugador(int nro_jugador) {
 	//
 	// ...
 	//
+
+
+
+
+	//Busqueda de bandera
+	coordenadas pos_actual;
+	pos_actual.first = nro_jugador+1;  //me interesa que el jugador 0 mire la 1ra fila.
+	pos_actual.second = 1;
+
+	while(!bandera_found){
+
+		//entra si hay filas que mirar en el tablero
+		while(pos_actual.first <= this->belcebu->getTamx() && !bandera_found){
+
+			if(this->belcebu->es_posicion_bandera(pos_actual, this->contrario)){
+				bandera_found = true;
+				pos_bandera_contraria = pos_actual;
+				//cout << "Bandera " 
+				//     << ((this->equipo == AZUL) ? "Roja" : "Azul") 
+				//	 << " encontrada por jugador " 
+				//	 << nro_jugador << " en: ("
+				//	 << pos_bandera_contraria.first << ", " << pos_bandera_contraria.second << "). " << endl;
+			}
+
+			pos_actual.second = pos_actual.second + 1;
+			if(pos_actual.second > this->belcebu->getTamy()){
+				pos_actual.second = 1;
+				pos_actual.first += this->cant_jugadores;
+			}
+
+			
+
+		}
+
+	}
+
+
+	//Estrategias
 	while(!this->belcebu->termino_juego()) { // Chequear que no haya una race condition en gameMaster
+
 		switch(this->strat) {
 			//SECUENCIAL,RR,SHORTEST,USTEDES
 			case(SECUENCIAL): {
@@ -103,7 +143,7 @@ void Equipo::jugador(int nro_jugador) {
 				break;
 
 			case(SHORTEST):
-				
+
 				//molinetes
 				if(this->equipo == AZUL) {
                     sem_wait(&belcebu->turno_azul);
@@ -113,14 +153,17 @@ void Equipo::jugador(int nro_jugador) {
                     sem_post(&belcebu->turno_rojo);
                 }
 
-				if(belcebu->soy_el_mas_cercano(nro_jugador,this->equipo)){
+				if(!belcebu->soy_el_mas_cercano(nro_jugador,this->equipo)){
+					sem_wait(&barrier);
+				} else {
 					cout << "Soy el mas cercano, mi numero es: " << nro_jugador << endl;
-					coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+					coordenadas coords_bandera = buscar_bandera_contraria();
                 	direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
 					
 					belcebu->mover_jugador(proxima_dir, nro_jugador);
 					this->belcebu->termino_ronda(this->equipo);
 				}
+				sem_post(&barrier);
 
 				break;
 
@@ -216,5 +259,6 @@ void Equipo::terminar() {
 }
 
 coordenadas Equipo::buscar_bandera_contraria() {
-	return contrario == ROJO ? belcebu->pos_bandera_roja : belcebu->pos_bandera_azul;
+	//return contrario == ROJO ? belcebu->pos_bandera_roja : belcebu->pos_bandera_azul;
+	return pos_bandera_contraria;
 }

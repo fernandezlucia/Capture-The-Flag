@@ -22,12 +22,15 @@ class Equipo {
 		int cant_jugadores_que_ya_jugaron = 0;
 		vector<coordenadas> posiciones;
 		coordenadas pos_bandera_contraria;
+
 		mutex moverse;
 		mutex fafa;
 		sem_t barrier;
         sem_t barrier2;
 		atomic_int value{0};
 		
+		bool bandera_found = false;
+
 		vector<sem_t> mutexes_rr;
 
 		vector<int> jugadores_ya_jugaron;

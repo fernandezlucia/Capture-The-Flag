@@ -30,6 +30,7 @@ private:
     // Métodos privados
     color obtener_coordenadas(coordenadas coord);
     void mover_jugador_tablero(coordenadas pos_anterior, coordenadas pos_nueva, color colorEquipo);
+    coordenadas pos_bandera_roja, pos_bandera_azul;
     //
     //...
     //
@@ -40,7 +41,6 @@ public:
     void termino_ronda(color equipo); // Marca que un jugador terminó la ronda
     int mover_jugador(direccion dir, int nro_jugador);
     color ganador = INDEFINIDO;
-    coordenadas pos_bandera_roja, pos_bandera_azul; // TODO: MOVER A PRIVATE!
     bool soy_el_mas_cercano(int nro_jugador, color equipo);
     //
     //...
@@ -65,7 +65,7 @@ public:
     int proximo_cercano(color equipo);
     //Nuestras:
     bool es_posicion_bandera(coordenadas coord, color bandera);
-    coordenadas* movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo);
+    vector<coordenadas> movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo);
     void play();
     //
 };
