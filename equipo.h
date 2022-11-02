@@ -32,8 +32,8 @@ class Equipo {
 		bool bandera_found = false;
 
 		vector<int> jugadores_ya_jugaron;
-		vector<atomic_int> quantum_por_jugador;
-
+		vector<int> quantums_por_jugador;
+		
 		//
 		// ...
 		//
@@ -42,6 +42,7 @@ class Equipo {
 		direccion apuntar_a(coordenadas pos2, coordenadas pos1);
 		void jugador(int nro_jugador);
 		coordenadas buscar_bandera_contraria();
+		void reiniciar_quantums();
 		//
 		// ...
 		//

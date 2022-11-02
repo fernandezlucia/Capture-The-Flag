@@ -1,5 +1,5 @@
 #include "equipo.h"
-
+#include <random>
 /**
  * @brief obtengo la direccion correspondiente a apuntar desde pos1 a pos2
  * por ejemplo: (5,5) -> (1,1) => ARRIBA o IZQUIERDA
@@ -169,6 +169,33 @@ void Equipo::jugador(int nro_jugador) {
 				break;
 			}
 			case(USTEDES): {
+				this_thread::sleep_for(100ms);
+				if(equipo == ROJO) sem_wait(&belcebu->mutexes_rr_rojos[nro_jugador]);
+				else sem_wait(&belcebu->mutexes_rr_azules[nro_jugador]);
+
+ 				while(quantums_por_jugador[nro_jugador] > 0) {
+					coordenadas coords_bandera = buscar_bandera_contraria(); // ejecutar en la creacion del equipo
+                	direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
+					belcebu->mover_jugador(proxima_dir, nro_jugador); // sin mutex, sabemos que esta bloqueado
+					quantums_por_jugador[nro_jugador]--;
+				} 
+
+				if(nro_jugador == cant_jugadores-1) {
+					this->belcebu->termino_ronda(this->equipo);
+					reiniciar_quantums();
+					if(this->equipo == AZUL){
+						sem_post(&belcebu->mutexes_rr_rojos[0]);	
+					} else {
+						sem_post(&belcebu->mutexes_rr_azules[0]);
+					}
+				} else {
+					if(this->equipo == AZUL) {
+						sem_post(&belcebu->mutexes_rr_azules[(nro_jugador + 1) % cant_jugadores]);
+					} else {
+						sem_post(&belcebu->mutexes_rr_rojos[(nro_jugador + 1) % cant_jugadores]);
+					}
+				}
+
 				break;
 			}
 			default:
@@ -215,6 +242,7 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 	this->quantum_restante = quantum;
 	this->cant_jugadores = cant_jugadores;
 	this->posiciones = posiciones;
+	this->quantums_por_jugador = vector<int>(cant_jugadores,0);
 
 	for(int i = 0; i < cant_jugadores; i++){
 		sem_t semaphore;
@@ -228,32 +256,36 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 			else sem_init(&(belcebu->mutexes_rr_azules[i]), 0, 0);
 		}
 	}
+
+	sem_init(&barrier, 0, 0);
+	sem_init(&lejanos, 0, 0);
 	
 	for(int i = 0; i < cant_jugadores; i++){
 		jugadores_ya_jugaron.push_back(0);
 	}
 
-	sem_init(&barrier, 0, 0);
-	sem_init(&lejanos, 0, 0);
-	
-    //
-	// ...
-	//
-
-	//Si necesitamos mas semaforos van aca
+	reiniciar_quantums();
 
 	// interpretamos en la consigna que de no alcanzar para cubrir a todos los jugadores con el quantum,
 	// todos se mueven una vez.
-	// if(quantum < cant_jugadores){
-	// 	quantum = cant_jugadores;
-	// 	quantum_restante = quantum;
-	// }
+	if(quantum < cant_jugadores){
+		quantum = cant_jugadores;
+		quantum_restante = quantum;
+	}
 
     //Iniciar su respectivo semaforo.
 	if(equipo == AZUL){
 		sem_init(&belcebu->turno_azul, 0, 0);
 	} else {
 		sem_init(&belcebu->turno_rojo, 0, cant_jugadores);
+	}
+}
+
+void Equipo::reiniciar_quantums() {
+	int maxQuantum = 10;
+	for(int i = 0; i < cant_jugadores; i++){
+		int random = rand() % maxQuantum;
+		quantums_por_jugador[i] = random;
 	}
 }
 
