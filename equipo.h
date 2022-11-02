@@ -22,13 +22,18 @@ class Equipo {
 		int cant_jugadores_que_ya_jugaron = 0;
 		vector<coordenadas> posiciones;
 		coordenadas pos_bandera_contraria;
+
 		mutex moverse;
 		mutex terminacion_de_ronda;
 		sem_t barrier;
 		atomic_int todos_terminaron{0};
 		sem_t lejanos;
 
+		bool bandera_found = false;
+
 		vector<int> jugadores_ya_jugaron;
+		vector<atomic_int> quantum_por_jugador;
+
 		//
 		// ...
 		//

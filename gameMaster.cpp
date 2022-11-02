@@ -131,8 +131,10 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
         cout << "Me intente mover a una posicion invalida entonces no hice nada, soy "
              << nro_jugador << " de "
              << ((turno == AZUL) ? ("AZUL") : ("ROJO"))
-             << " en (" << proximaPosicion.first << "," << proximaPosicion.second << ")"
+             << " desde: (" << posicionJugador.first << "," << posicionJugador.second << ")"
+             << " hasta: (" << proximaPosicion.first << "," << proximaPosicion.second << ")"
              << endl;
+             //exit(0);
         return nro_ronda;
     }
 
@@ -158,6 +160,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
         int i = 0;
 
         while(!success){
+            return nro_ronda;
             es_libre = es_color_libre(en_posicion(next[i])); //La proxima posicion es vacia en el tablero?
             bandera_objetivo = en_posicion(next[i]) == bandera_contraria; //La proxima posicion es la bandera?
             if(!es_libre && !bandera_objetivo){
@@ -278,69 +281,66 @@ bool gameMaster::es_posicion_bandera(coordenadas coord, color bandera){
 	if(coord == pos_bandera_roja && bandera == ROJO){
 		return true;
 	} else if(coord == pos_bandera_azul && bandera == AZUL){
-		return false;
+		return true;
 	}
 	return false;
 }
 
-//Idea: devolver un array de 3 elementos con la posicion mas sensata a intentar despues
+//Idea: devolver un vector de elementos con la posicion mas sensata a intentar despues (solo devuelve posiciones validas)
 //Considerando mas sensato un movimiento que no me aleje de la bandera
 //Ej Si intentamos movernos arriba y no se pudo, intentamos derecha o izquiera, y de ultima opcion hacia abajo
 //porque esta la ultima nos hace perder mas tiempo
-coordenadas* gameMaster::movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo){
-    coordenadas* res = new coordenadas[3];
+vector<coordenadas> gameMaster::movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo){
+    vector<coordenadas> res;
+
     if(intento_movimiento == ARRIBA){
-
         if(objetivo.first < posicion.first){
-            res[0] = this->proxima_posicion(posicion, IZQUIERDA);
-            res[1] = this->proxima_posicion(posicion, DERECHA);
-            res[2] = this->proxima_posicion(posicion, ABAJO);
+            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
         } else {
-            res[0] = this->proxima_posicion(posicion, DERECHA);
-            res[1] = this->proxima_posicion(posicion, IZQUIERDA);
-            res[2] = this->proxima_posicion(posicion, ABAJO);
+            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
         }
-
     } else if(intento_movimiento == ABAJO){
-
         if(objetivo.first < posicion.first){
-            res[0] = this->proxima_posicion(posicion, IZQUIERDA);
-            res[1] = this->proxima_posicion(posicion, DERECHA);
-            res[2] = this->proxima_posicion(posicion, ARRIBA);
+            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
         } else {
-            res[0] = this->proxima_posicion(posicion, DERECHA);
-            res[1] = this->proxima_posicion(posicion, IZQUIERDA);
-            res[2] = this->proxima_posicion(posicion, ARRIBA);
+            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
         }
-
     } else if(intento_movimiento == IZQUIERDA){
-
         if(objetivo.second < posicion.second){
-            res[0] = this->proxima_posicion(posicion, ARRIBA);
-            res[1] = this->proxima_posicion(posicion, ABAJO);
-            res[2] = this->proxima_posicion(posicion, DERECHA);
+            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
+            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
         } else {
-            res[0] = this->proxima_posicion(posicion, ABAJO);
-            res[1] = this->proxima_posicion(posicion, ARRIBA);
-            res[2] = this->proxima_posicion(posicion, DERECHA);
+            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
+            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
         }
-
     } else {
-
         if(objetivo.second < posicion.second){
-            res[0] = this->proxima_posicion(posicion, ARRIBA);
-            res[1] = this->proxima_posicion(posicion, ABAJO);
-            res[2] = this->proxima_posicion(posicion, IZQUIERDA);
+            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
+            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
         } else {
-            res[0] = this->proxima_posicion(posicion, ABAJO);
-            res[1] = this->proxima_posicion(posicion, ARRIBA);
-            res[2] = this->proxima_posicion(posicion, IZQUIERDA);
+            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
+            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
+            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
         }
     }
 
     return res;
 }
 
+coordenadas gameMaster::posicion_de(int nro_jugador, color equipo){
+    return equipo == ROJO ? (this->pos_jugadores_rojos[nro_jugador]) : (this->pos_jugadores_azules[nro_jugador]);
+}
 
 void gameMaster::play(){
 	// cout << "Empezando 🤖, que gane el mejor..." << endl;

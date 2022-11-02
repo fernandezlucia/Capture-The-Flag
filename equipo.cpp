@@ -7,12 +7,12 @@
  * @param pos2 Coordenada hacia donde apuntamos
  * @return direccion a la que tenemos que avanzar.
  */
-direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) {
-	if(pos1.first > pos2.first) return IZQUIERDA;
+direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) { // 99,2 -> 99,99
+	if (pos1.first > pos2.first) return IZQUIERDA;
 	if (pos1.first < pos2.first) return DERECHA;
 	// Estoy en la misma COL.
-	if(pos1.second > pos2.second) return ARRIBA;
-	if(pos1.second < pos2.second) return ABAJO;
+	if (pos1.second > pos2.second) return ARRIBA;
+	if (pos1.second < pos2.second) return ABAJO;
 
 	return ABAJO;
 }
@@ -22,6 +22,40 @@ void Equipo::jugador(int nro_jugador) {
 	//
 	// ...
 	//
+
+	/*
+	//Busqueda de bandera
+	coordenadas pos_actual;
+	pos_actual.first = nro_jugador+1;  //me interesa que el jugador 0 mire la 1ra fila.
+	pos_actual.second = 1;
+
+	while(!bandera_found){
+
+		//entra si hay filas que mirar en el tablero
+		while(pos_actual.first <= this->belcebu->getTamx() && !bandera_found){
+
+			if(this->belcebu->es_posicion_bandera(pos_actual, this->contrario)){
+				bandera_found = true;
+				pos_bandera_contraria = pos_actual;
+				//cout << "Bandera " 
+				//     << ((this->equipo == AZUL) ? "Roja" : "Azul") 
+				//	 << " encontrada por jugador " 
+				//	 << nro_jugador << " en: ("
+				//	 << pos_bandera_contraria.first << ", " << pos_bandera_contraria.second << "). " << endl;
+			}
+
+			pos_actual.second = pos_actual.second + 1;
+			if(pos_actual.second > this->belcebu->getTamy()){
+				pos_actual.second = 1;
+				pos_actual.first += this->cant_jugadores;
+			}
+
+		}
+	}
+	
+	*/
+
+	//Estrategias
 	bool soy_el_mas_cercano = false;
 	if(this->strat == SHORTEST){
 		soy_el_mas_cercano = belcebu->soy_el_mas_cercano(nro_jugador,this->equipo);
@@ -134,21 +168,17 @@ void Equipo::jugador(int nro_jugador) {
 
 				break;
 			}
-			case(USTEDES):
-				// ideas
-				// Movimientos random
-				// Longest Job First
-				// Un jugador tiene mas quantum que los demas
-
+			case(USTEDES): {
 				break;
+			}
 			default:
 				break;
-		}	
-		// Termino ronda ? Recordar llamar a belcebu...
-		// OJO. Esto lo termina un jugador... 
-		//
-		// ...
-		//
+		}
+
+
+		posiciones[nro_jugador] = belcebu->posicion_de(nro_jugador, this->equipo);
+
+
 	}
 	switch(this->strat){
 		case(SECUENCIAL): {
@@ -214,10 +244,10 @@ Equipo::Equipo(gameMaster *belcebu, color equipo,
 
 	// interpretamos en la consigna que de no alcanzar para cubrir a todos los jugadores con el quantum,
 	// todos se mueven una vez.
-	if(quantum < cant_jugadores){
-		quantum = cant_jugadores;
-		quantum_restante = quantum;
-	}
+	// if(quantum < cant_jugadores){
+	// 	quantum = cant_jugadores;
+	// 	quantum_restante = quantum;
+	// }
 
     //Iniciar su respectivo semaforo.
 	if(equipo == AZUL){
@@ -249,4 +279,5 @@ void Equipo::terminar() {
 
 coordenadas Equipo::buscar_bandera_contraria() {
 	return contrario == ROJO ? belcebu->pos_bandera_roja : belcebu->pos_bandera_azul;
+	//return pos_bandera_contraria;
 }

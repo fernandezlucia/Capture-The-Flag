@@ -53,6 +53,7 @@ public:
 	int getTamx();
 	int getTamy();
     static int distancia(coordenadas pair1, coordenadas pair2);
+    coordenadas posicion_de(int nro_jugador, color equipo);
     int ronda_actual();
     
     sem_t turno_rojo, turno_azul; // FIXME: Al principio necesito entrar como azul, luego puedo hacerlo por el método termino_ronda....
@@ -69,7 +70,7 @@ public:
     int proximo_cercano(color equipo);
     //Nuestras:
     bool es_posicion_bandera(coordenadas coord, color bandera);
-    coordenadas* movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo);
+    vector<coordenadas> movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo);
     void play();
     //
 };
