@@ -23,7 +23,7 @@ void Equipo::jugador(int nro_jugador) {
 	// ...
 	//
 
-	/*
+	
 	//Busqueda de bandera
 	coordenadas pos_actual;
 	pos_actual.first = nro_jugador+1;  //me interesa que el jugador 0 mire la 1ra fila.
@@ -53,7 +53,7 @@ void Equipo::jugador(int nro_jugador) {
 		}
 	}
 	
-	*/
+	
 
 	//Estrategias
 	bool soy_el_mas_cercano = false;
@@ -278,6 +278,6 @@ void Equipo::terminar() {
 }
 
 coordenadas Equipo::buscar_bandera_contraria() {
-	return contrario == ROJO ? belcebu->pos_bandera_roja : belcebu->pos_bandera_azul;
-	//return pos_bandera_contraria;
+	//return contrario == ROJO ? belcebu->pos_bandera_roja : belcebu->pos_bandera_azul;
+	return pos_bandera_contraria;
 }

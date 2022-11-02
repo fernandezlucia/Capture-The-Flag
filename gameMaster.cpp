@@ -155,27 +155,35 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 		     << ((turno == AZUL) ? ("AZUL") : ("ROJO"))
              << ", Reintento: ";
 
-        coordenadas* next = this->movimiento_alternativo(posicionJugador, dir, proximaPosicion);
+        vector<coordenadas> next = this->movimiento_alternativo(posicionJugador, dir, proximaPosicion);
         bool success = false;
         int i = 0;
 
-        while(!success){
-            return nro_ronda;
-            es_libre = es_color_libre(en_posicion(next[i])); //La proxima posicion es vacia en el tablero?
-            bandera_objetivo = en_posicion(next[i]) == bandera_contraria; //La proxima posicion es la bandera?
-            if(!es_libre && !bandera_objetivo){
-                if(i < 3){
-                    i++;
+        //si hay movimientos alternativos
+        if(next.size() != 0){
+
+            while(!success){
+                es_libre = es_color_libre(en_posicion(next[i])); //La proxima posicion es vacia en el tablero?
+                bandera_objetivo = en_posicion(next[i]) == x; //La proxima posicion es la bandera?
+                if(!es_libre && !bandera_objetivo){
+                    if(i < next.size()){
+                        i++;
+                    } else {
+                        cout << "Fracase :(" << endl;
+                        return nro_ronda;
+                    }
                 } else {
-                    cout << "Fracasé :(" << endl;
-                    return nro_ronda;
+                    cout << "Exito! :)   -->";
+                    proximaPosicion = next[i];
+                    break;
                 }
-            } else {
-                cout << "Exito! :)   -->";
-                proximaPosicion = next[i];
-                break;
             }
+
+        } else {
+            cout << "no tengo alternativas, Fracase :(" << endl;
+            return nro_ronda;
         }
+
     }
 
     cout << "Realizando turno de: "
