@@ -82,6 +82,7 @@ gameMaster::gameMaster(Config config) {
     tablero[config.bandera_roja.first][config.bandera_roja.second] = BANDERA_ROJA;
     tablero[config.bandera_azul.first][config.bandera_azul.second] = BANDERA_AZUL;
 	this->turno = ROJO;
+    sem_init(&ronda_anterior_finalizada, 0, 0);
 
     cout << "SE HA INICIALIZADO GAMEMASTER CON EXITO" << endl;
     // Insertar código que crea necesario de inicialización
@@ -98,7 +99,6 @@ int distancia_del_taxista(coordenadas p1, coordenadas p2){
 }
 
 bool gameMaster::soy_el_mas_cercano(int nro_jugador, color equipo){
-    int masCercano = 0;
     if(equipo == ROJO){
         int distancia_de_jugador_actual = distancia_del_taxista(pos_jugadores_rojos[nro_jugador], pos_bandera_azul);
         for(int i = 0; i < pos_jugadores_rojos.size(); i++) {
@@ -139,8 +139,8 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
     }
 
 	bool es_libre = es_color_libre(en_posicion(proximaPosicion)); //La proxima posicion es vacia en el tablero?
-    color x = turno == AZUL ? BANDERA_ROJA : BANDERA_AZUL;
-	bool bandera_objetivo = en_posicion(proximaPosicion) == x; //La proxima posicion es la bandera?
+    color bandera_contraria = turno == AZUL ? BANDERA_ROJA : BANDERA_AZUL;
+	bool bandera_objetivo = en_posicion(proximaPosicion) == bandera_contraria; //La proxima posicion es la bandera?
 
 	// No me puedo mover, por el momento termino mi turno si a donde
 	// apunto no puedo, pero habria que buscar alternativa, es decir, 
@@ -169,7 +169,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
                     if(i < next.size()){
                         i++;
                     } else {
-                        cout << "Fracasé :(" << endl;
+                        cout << "Fracase :(" << endl;
                         return nro_ronda;
                     }
                 } else {
@@ -180,7 +180,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
             }
 
         } else {
-            cout << "no tengo alternativas, Fracasé :(" << endl;
+            cout << "no tengo alternativas, Fracase :(" << endl;
             return nro_ronda;
         }
 
@@ -188,7 +188,7 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 
     cout << "Realizando turno de: "
          << nro_jugador << " "
-         << ((turno == AZUL) ? ("AZUL") : ("ROJO"))
+         << ((turno == AZUL) ? FBLU("AZUL") : FRED("ROJO"))
          << " moviendose desde ("
          << posicionJugador.first
          << ","
@@ -247,37 +247,20 @@ void gameMaster::termino_ronda(color equipo) {
 	int i = 0;
 	if(!termino_juego()){
 		if(equipo == ROJO){
-
-			//while(i < jugadores_por_equipos){
-            //int val;
-            //sem_getvalue(&turno_rojo, &val);
-            //if(val > 0){
-                sem_wait(&turno_rojo);
-            //}
-            sem_post(&turno_azul);
-			//	i++;
-			//}
-			turno = AZUL;
-						
+            turno = AZUL;				
 		} else {
-
-			//while(i < jugadores_por_equipos){
-            //int val;
-            //sem_getvalue(&turno_azul, &val);
-            //if(val > 0){
-                sem_wait(&turno_azul);
-            //}
-            sem_post(&turno_rojo);
-			//	i++;
-			//}
 			turno = ROJO;
 		}
 	}
-	nro_ronda++;
+    if(equipo == AZUL) nro_ronda++;
 }
 
 bool gameMaster::termino_juego() {
 	return ganador != INDEFINIDO;
+}
+
+int gameMaster::ronda_actual() {
+    return this->nro_ronda;
 }
 
 coordenadas gameMaster::proxima_posicion(coordenadas anterior, direccion movimiento) {
@@ -363,6 +346,9 @@ vector<coordenadas> gameMaster::movimiento_alternativo(coordenadas posicion, dir
     return res;
 }
 
+coordenadas gameMaster::posicion_de(int nro_jugador, color equipo){
+    return equipo == ROJO ? (this->pos_jugadores_rojos[nro_jugador]) : (this->pos_jugadores_azules[nro_jugador]);
+}
 
 void gameMaster::play(){
 	// cout << "Empezando 🤖, que gane el mejor..." << endl;
