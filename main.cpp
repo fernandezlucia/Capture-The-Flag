@@ -11,7 +11,7 @@
 
 using namespace std;
 
-const estrategia strat = USTEDES;
+const estrategia strat = SECUENCIAL;
 const int quantum = 10;
 
 int main(){

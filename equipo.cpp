@@ -1,13 +1,8 @@
 #include "equipo.h"
 #include <random>
-/**
- * @brief obtengo la direccion correspondiente a apuntar desde pos1 a pos2
- * por ejemplo: (5,5) -> (1,1) => ARRIBA o IZQUIERDA
- * @param pos1 Coordenada desde donde apuntamos
- * @param pos2 Coordenada hacia donde apuntamos
- * @return direccion a la que tenemos que avanzar.
- */
-direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) { // 99,2 -> 99,99
+#define NAIVE_SEARCH true
+
+direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) { 
 	if (pos1.first > pos2.first) return IZQUIERDA;
 	if (pos1.first < pos2.first) return DERECHA;
 	// Estoy en la misma COL.
@@ -19,29 +14,24 @@ direccion Equipo::apuntar_a(coordenadas pos1, coordenadas pos2) { // 99,2 -> 99,
 
 
 void Equipo::jugador(int nro_jugador) {
-	//
-	// ...
-	//
-
 	
 	//Busqueda de bandera
 	coordenadas pos_actual;
-	pos_actual.first = nro_jugador+1;  //me interesa que el jugador 0 mire la 1ra fila.
+	pos_actual.first = nro_jugador+1; 
 	pos_actual.second = 1;
 
-	while(!bandera_found){
+	while(!bandera_found && !hizo_naive_search){
 
-		//entra si hay filas que mirar en el tablero
 		while(pos_actual.first <= this->belcebu->getTamx() && !bandera_found){
 
 			if(this->belcebu->es_posicion_bandera(pos_actual, this->contrario)){
 				bandera_found = true;
+				clock_gettime(CLOCK_REALTIME, &tiempo_despues_threaded);
+				cout << FMAG("Se tardo en encontrar la bandera ") 
+					 << ((equipo == ROJO) ? FRED("ROJO") : FBLU("AZUL")) << " "
+					 << tiempo_despues_threaded.tv_nsec - tiempo_antes_threaded.tv_nsec << " "
+					 << FMAG("ns.") << endl;
 				pos_bandera_contraria = pos_actual;
-				//cout << "Bandera " 
-				//     << ((this->equipo == AZUL) ? "Roja" : "Azul") 
-				//	 << " encontrada por jugador " 
-				//	 << nro_jugador << " en: ("
-				//	 << pos_bandera_contraria.first << ", " << pos_bandera_contraria.second << "). " << endl;
 			}
 
 			pos_actual.second = pos_actual.second + 1;
@@ -61,9 +51,8 @@ void Equipo::jugador(int nro_jugador) {
 		soy_el_mas_cercano = belcebu->soy_el_mas_cercano(nro_jugador,this->equipo);
 	}
 	if(!soy_el_mas_cercano && this->strat == SHORTEST) return;
-	while(!this->belcebu->termino_juego()) { // Chequear que no haya una race condition en gameMaster
+	while(!this->belcebu->termino_juego()) {
 		switch(this->strat) {
-			//SECUENCIAL,RR,SHORTEST,USTEDES
 			case(SECUENCIAL): {
 				int finalizador = -1;
 				if(this->equipo == AZUL) {
@@ -113,7 +102,6 @@ void Equipo::jugador(int nro_jugador) {
 			}	
 			case(RR): {
 				int finalizador = -1;
-				// belcebu->mutexes_rr_azules
 				if(equipo == ROJO) sem_wait(&belcebu->mutexes_rr_rojos[nro_jugador]);
 				else sem_wait(&belcebu->mutexes_rr_azules[nro_jugador]);
 
@@ -150,12 +138,11 @@ void Equipo::jugador(int nro_jugador) {
                 }
 
 				if(belcebu->ronda_actual() == 0 && this->equipo == ROJO){
-					sem_wait(&belcebu->turno_rojo);
-					sem_wait(&belcebu->turno_rojo);
-					sem_wait(&belcebu->turno_rojo);
+					// Nos sacamos los turnos que ya no necesitamos
+					for (size_t i = 0; i < cant_jugadores - 1; i++) sem_wait(&belcebu->turno_rojo);
 				}
 
-				coordenadas coords_bandera = buscar_bandera_contraria(); // Hay que paralelizar esto, cada uno busca en un sector
+				coordenadas coords_bandera = buscar_bandera_contraria(); 
                 direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
 				belcebu->mover_jugador(proxima_dir, nro_jugador);
 				this->belcebu->termino_ronda(this->equipo);
@@ -290,14 +277,24 @@ void Equipo::reiniciar_quantums() {
 }
 
 void Equipo::comenzar() {
-	// Arranco cuando me toque el turno 
-	// TODO: Quien empieza ? 
-	//
-	// ...
-	//
 	
+	if(NAIVE_SEARCH){
+		hizo_naive_search = true;
+		timespec tiempo_antes;
+		timespec tiempo_despues;
+		clock_gettime(CLOCK_REALTIME, &tiempo_antes);
+		buscar_bandera_naive();
+		clock_gettime(CLOCK_REALTIME, &tiempo_despues);
+		cout << FMAG("Se tardo en encontrar la bandera (naive) ") 
+					 << ((equipo == ROJO) ? FRED("ROJO") : FBLU("AZUL")) << " "
+					 << tiempo_despues.tv_nsec - tiempo_antes.tv_nsec << " "
+					 << FMAG("ns.") << endl;
+	}
+	
+	if(!NAIVE_SEARCH) clock_gettime(CLOCK_REALTIME, &tiempo_antes_threaded);
 	// Creamos los jugadores
 	for(int i=0; i < cant_jugadores; i++) {
+		
 		jugadores.emplace_back(thread(&Equipo::jugador, this, i)); 
 	}
 
@@ -310,6 +307,25 @@ void Equipo::terminar() {
 }
 
 coordenadas Equipo::buscar_bandera_contraria() {
-	//return contrario == ROJO ? belcebu->pos_bandera_roja : belcebu->pos_bandera_azul;
 	return pos_bandera_contraria;
+}
+
+void Equipo::buscar_bandera_naive(){
+	
+	//mientras exista bandera contraria, esto la encuentra.
+	for (size_t x = 1; x < belcebu->getTamx(); x++) {
+		
+		for (size_t y = 1; y < belcebu->getTamy(); y++) {
+			coordenadas temp;
+			temp.first = x;
+			temp.second = y;
+		
+			if( belcebu->es_posicion_bandera(temp, this->contrario) ){
+				bandera_found = true;
+				pos_bandera_contraria = temp;
+				return;
+			}
+		}
+	}
+
 }

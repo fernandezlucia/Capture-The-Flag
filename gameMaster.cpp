@@ -1,5 +1,5 @@
 #include <sys/unistd.h>
-#include <assert.h>     /* assert */
+#include <assert.h>
 #include "gameMaster.h"
 
 bool gameMaster::es_posicion_valida(coordenadas pos) {
@@ -85,7 +85,6 @@ gameMaster::gameMaster(Config config) {
     sem_init(&ronda_anterior_finalizada, 0, 0);
 
     cout << "SE HA INICIALIZADO GAMEMASTER CON EXITO" << endl;
-    // Insertar código que crea necesario de inicialización
 }
 
 void gameMaster::mover_jugador_tablero(coordenadas pos_anterior, coordenadas pos_nueva, color colorEquipo){
@@ -134,7 +133,6 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
              << " desde: (" << posicionJugador.first << "," << posicionJugador.second << ")"
              << " hasta: (" << proximaPosicion.first << "," << proximaPosicion.second << ")"
              << endl;
-             //exit(0);
         return nro_ronda;
     }
 
@@ -231,19 +229,14 @@ int gameMaster::mover_jugador(direccion dir, int nro_jugador) {
 		}
 		
 	} else {
-		// SKIP
+		/* Skip */ 
 	}
-
-	// TODO: actualizar coordenadas del equipo (decidir si lo hace el gamemaster o el equipo)
 	return res;
 
 }
 
 
 void gameMaster::termino_ronda(color equipo) {
-	// FIXME: Hacer chequeo de que es el color correcto que está llamando
-	// FIXME: Hacer chequeo que hayan terminado todos los jugadores del equipo o su quantum (via mover_jugador)
-
 	int i = 0;
 	if(!termino_juego()){
 		if(equipo == ROJO){
@@ -264,7 +257,6 @@ int gameMaster::ronda_actual() {
 }
 
 coordenadas gameMaster::proxima_posicion(coordenadas anterior, direccion movimiento) {
-	// Calcula la proxima posición a moverse (es una copia) 
 	switch(movimiento) {
 		case(ARRIBA):
 			anterior.second--; 
@@ -282,7 +274,7 @@ coordenadas gameMaster::proxima_posicion(coordenadas anterior, direccion movimie
 			anterior.first++;
 			break;
 	}
-	return anterior; // está haciendo una copia por constructor
+	return anterior;
 }
 
 bool gameMaster::es_posicion_bandera(coordenadas coord, color bandera){
@@ -294,10 +286,7 @@ bool gameMaster::es_posicion_bandera(coordenadas coord, color bandera){
 	return false;
 }
 
-//Idea: devolver un vector de elementos con la posicion mas sensata a intentar despues (solo devuelve posiciones validas)
-//Considerando mas sensato un movimiento que no me aleje de la bandera
-//Ej Si intentamos movernos arriba y no se pudo, intentamos derecha o izquiera, y de ultima opcion hacia abajo
-//porque esta la ultima nos hace perder mas tiempo
+
 vector<coordenadas> gameMaster::movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo){
     vector<coordenadas> res;
 
@@ -350,6 +339,4 @@ coordenadas gameMaster::posicion_de(int nro_jugador, color equipo){
     return equipo == ROJO ? (this->pos_jugadores_rojos[nro_jugador]) : (this->pos_jugadores_azules[nro_jugador]);
 }
 
-void gameMaster::play(){
-	// cout << "Empezando 🤖, que gane el mejor..." << endl;
-}
+void gameMaster::play(){ /* Empieza el juego */ }
