@@ -25,6 +25,7 @@ private:
     color obtener_coordenadas(coordenadas coord);
     void mover_jugador_tablero(coordenadas pos_anterior, coordenadas pos_nueva, color colorEquipo);
     coordenadas pos_bandera_roja, pos_bandera_azul;
+    vector<coordenadas> ya_visitadas_azules, ya_visitadas_rojas;
  
 public:
     gameMaster(Config config);
@@ -32,6 +33,7 @@ public:
     int mover_jugador(direccion dir, int nro_jugador);
     color ganador = INDEFINIDO;
     bool soy_el_mas_cercano(int nro_jugador, color equipo);
+    bool es_posicion_ya_visitada(coordenadas pos, color equipo);
     vector<sem_t> mutexes_rr_rojos;
     vector<sem_t> mutexes_rr_azules;
     bool termino_juego();

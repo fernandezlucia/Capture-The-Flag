@@ -178,6 +178,7 @@ void Equipo::jugador(int nro_jugador)
 			{
 				sem_wait(&belcebu->turno_rojo);
 			}
+			if(belcebu->termino_juego()) break;
 
 			if (belcebu->ronda_actual() == 0 && this->equipo == ROJO)
 			{
@@ -204,12 +205,13 @@ void Equipo::jugador(int nro_jugador)
 		}
 		case (USTEDES):
 		{
-			// this_thread::sleep_for(100ms);
 			if (equipo == ROJO)
 				sem_wait(&belcebu->mutexes_rr_rojos[nro_jugador]);
 			else
 				sem_wait(&belcebu->mutexes_rr_azules[nro_jugador]);
 
+			if (belcebu->termino_juego())
+				break;
 			while (quantums_por_jugador[nro_jugador] > 0)
 			{
 				coordenadas coords_bandera = buscar_bandera_contraria(); // ejecutar en la creacion del equipo
@@ -261,6 +263,11 @@ void Equipo::jugador(int nro_jugador)
 		break;
 	}
 	case (RR):
+	{
+		belcebu->liberar_proximos_restantes_rr(equipo, nro_jugador, cant_jugadores);
+		break;
+	}
+	case (USTEDES):
 	{
 		belcebu->liberar_proximos_restantes_rr(equipo, nro_jugador, cant_jugadores);
 		break;

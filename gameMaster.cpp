@@ -9,6 +9,23 @@ bool gameMaster::es_posicion_valida(coordenadas pos) {
 			(pos.second < y);
 }
 
+bool gameMaster::es_posicion_ya_visitada(coordenadas pos, color equipo) {
+    bool ya_paso = false;
+    if(equipo == AZUL) {
+        for(auto celda : ya_visitadas_azules){
+            ya_paso = celda == pos;
+            if (ya_paso) return ya_paso && es_posicion_valida(pos);
+        }
+    }
+    if(equipo == ROJO) {
+        for(auto celda : ya_visitadas_rojas){
+            ya_paso = celda == pos;
+            if (ya_paso) return ya_paso && es_posicion_valida(pos);
+        }
+    }
+    return ya_paso && es_posicion_valida(pos);
+}
+
 bool gameMaster::es_color_libre(color color_tablero){
     return color_tablero == VACIO || color_tablero == INDEFINIDO;
 }
