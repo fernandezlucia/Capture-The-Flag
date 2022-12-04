@@ -29,7 +29,7 @@ class Equipo {
 		sem_t barrier;
 		atomic_int todos_terminaron{0};
 		sem_t lejanos;
-
+		atomic_int termino_rr{0};
 		bool bandera_found = false;
 
 		vector<int> jugadores_ya_jugaron;

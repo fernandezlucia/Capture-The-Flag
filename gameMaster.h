@@ -52,6 +52,10 @@ public:
     int proximo_cercano(color equipo);
     bool es_posicion_bandera(coordenadas coord, color bandera);
     vector<coordenadas> movimiento_alternativo(coordenadas posicion, direccion intento_movimiento, coordenadas objetivo);
+    void realizar_movimiento_alternativo(coordenadas posicion,direccion dir_bloqueada, direccion dir_prioritaria, vector<coordenadas> &res);
+    void termino_equipo_rr(color equipo);
+    void liberar_proximos_restantes_rr(color equipo, int nro_jugador, int cant_jugadores);
+    
     void play();
 };
 

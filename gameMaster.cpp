@@ -292,51 +292,65 @@ vector<coordenadas> gameMaster::movimiento_alternativo(coordenadas posicion, dir
 
     if(intento_movimiento == ARRIBA){
         if(objetivo.first < posicion.first){
-            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
+            realizar_movimiento_alternativo(posicion, ARRIBA, IZQUIERDA, res);
         } else {
-            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
+            realizar_movimiento_alternativo(posicion, ARRIBA, DERECHA, res);
         }
-    } else if(intento_movimiento == ABAJO){
+    } 
+    if(intento_movimiento == ABAJO){
         if(objetivo.first < posicion.first){
-            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
+            realizar_movimiento_alternativo(posicion, ABAJO, IZQUIERDA, res);
         } else {
-            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
+            realizar_movimiento_alternativo(posicion, ABAJO, DERECHA, res);
         }
-    } else if(intento_movimiento == IZQUIERDA){
+    }
+    if(intento_movimiento == IZQUIERDA){
         if(objetivo.second < posicion.second){
-            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
-            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
+            realizar_movimiento_alternativo(posicion, IZQUIERDA, ARRIBA, res);
         } else {
-            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
-            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, DERECHA))) res.push_back(this->proxima_posicion(posicion, DERECHA));
+            realizar_movimiento_alternativo(posicion, IZQUIERDA, ABAJO, res);
         }
-    } else {
+    }
+    if(intento_movimiento == DERECHA){
         if(objetivo.second < posicion.second){
-            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
-            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
+            realizar_movimiento_alternativo(posicion, DERECHA, ARRIBA, res);
         } else {
-            if(es_posicion_valida(this->proxima_posicion(posicion, ABAJO))) res.push_back(this->proxima_posicion(posicion, ABAJO));
-            if(es_posicion_valida(this->proxima_posicion(posicion, ARRIBA))) res.push_back(this->proxima_posicion(posicion, ARRIBA));
-            if(es_posicion_valida(this->proxima_posicion(posicion, IZQUIERDA))) res.push_back(this->proxima_posicion(posicion, IZQUIERDA));
+            realizar_movimiento_alternativo(posicion, DERECHA, ABAJO, res);
         }
     }
 
     return res;
 }
 
+void gameMaster::realizar_movimiento_alternativo(coordenadas posicion, direccion dir_bloqueada, direccion dir_prioritaria, vector<coordenadas> &res){
+    vector<direccion> direcciones_posibles = {ARRIBA, ABAJO, IZQUIERDA, DERECHA};
+    if(es_posicion_valida(this->proxima_posicion(posicion, dir_prioritaria))){
+        res.push_back(this->proxima_posicion(posicion, dir_prioritaria));
+    } else {
+        for(auto p : direcciones_posibles){
+            if( p != dir_bloqueada && p != dir_prioritaria && es_posicion_valida(this->proxima_posicion(posicion, p))) res.push_back(this->proxima_posicion(posicion, p));
+        }
+    }
+}
+
 coordenadas gameMaster::posicion_de(int nro_jugador, color equipo){
     return equipo == ROJO ? (this->pos_jugadores_rojos[nro_jugador]) : (this->pos_jugadores_azules[nro_jugador]);
+}
+
+void gameMaster::termino_equipo_rr(color equipo){
+    if(equipo == AZUL){
+        sem_post(&mutexes_rr_rojos[0]);	
+	} else {
+		sem_post(&mutexes_rr_azules[0]);
+    }
+}
+
+void gameMaster::liberar_proximos_restantes_rr(color equipo, int nro_jugador, int cant_jugadores) {
+    if(equipo == AZUL){
+        sem_post(&mutexes_rr_rojos[(nro_jugador + 1) % cant_jugadores]);	
+    } else {
+        sem_post(&mutexes_rr_azules[(nro_jugador + 1) % cant_jugadores]);
+    }
 }
 
 void gameMaster::play(){ /* Empieza el juego */ }
