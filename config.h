@@ -11,6 +11,7 @@ using namespace std;
 class Config{
     public:
         Config();
+        Config(string filename);
         vector<coordenadas> pos_rojo, pos_azul;
         coordenadas bandera_roja, bandera_azul;
         int cantidad_jugadores;

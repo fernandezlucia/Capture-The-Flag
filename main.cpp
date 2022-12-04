@@ -11,11 +11,44 @@
 
 using namespace std;
 
-const estrategia strat = SHORTEST;
-const int quantum = 10;
+estrategia strat = SECUENCIAL;
+int quantum = 10;
+string filename = "../config/config_parameters_catedra.csv";
 
-int main(){
-    Config config = *(new Config());
+int main(int argc, char* argv[]){
+    bool estrategia_desc = false;
+    if ( argc >= 4 ) {
+        string s = argv[1];
+        
+        if(s == "SECUENCIAL"){
+            strat = SECUENCIAL;
+        }
+        else if(s == "RR"){
+            strat = RR;
+        }
+        else if(s == "USTEDES"){
+            strat = USTEDES;
+        }
+        else if(s == "SHORTEST"){
+            strat = SHORTEST;
+        }
+        else {
+            estrategia_desc = true;
+            cout << FYEL("Estrategia desconocida, usando default (SECUENCIAL, RR, SHORTEST, USTEDES son validas).") << endl;
+        }
+
+        quantum = atoi(argv[2]);
+        filename = argv[3];
+    }
+
+    string def = (estrategia_desc ? ("default") : (argv[1]));
+
+    cout << "El quantum elegido fue : " 
+    << quantum << " para el archivo en " 
+    << filename << " con estrategia " 
+    << def << endl;
+
+    Config config = *(new Config(filename));
 	
     gameMaster belcebu = gameMaster(config);
 

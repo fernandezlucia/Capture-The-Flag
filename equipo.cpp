@@ -138,14 +138,10 @@ void Equipo::jugador(int nro_jugador)
 			}
 			if (quantum_restante > 0)
 			{
-				coordenadas coords_bandera = buscar_bandera_contraria(); // ejecutar en la creacion del equipo
+				coordenadas coords_bandera = buscar_bandera_contraria();
 				direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
-				belcebu->mover_jugador(proxima_dir, nro_jugador); // sin mutex, sabemos que esta bloqueado
+				belcebu->mover_jugador(proxima_dir, nro_jugador);
 				quantum_restante--;
-				if (this->belcebu->termino_juego())
-				{
-					cout << "Termine y soy el " << nro_jugador << endl;
-				}
 				if (this->equipo == AZUL)
 				{
 					sem_post(&belcebu->mutexes_rr_azules[(nro_jugador + 1) % cant_jugadores]);
@@ -212,7 +208,7 @@ void Equipo::jugador(int nro_jugador)
 
 			if (belcebu->termino_juego())
 				break;
-			while (quantums_por_jugador[nro_jugador] > 0)
+			while (quantums_por_jugador[nro_jugador] > 0 && !belcebu->termino_juego())
 			{
 				coordenadas coords_bandera = buscar_bandera_contraria(); // ejecutar en la creacion del equipo
 				direccion proxima_dir = apuntar_a(posiciones[nro_jugador], coords_bandera);
